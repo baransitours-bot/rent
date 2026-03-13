@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { t, type Locale } from "@/i18n/translations";
-import { ArrowRight, ArrowLeft, Upload, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Upload, Check, Star } from "lucide-react";
 import Link from "next/link";
 
 export default function NewPropertyPage() {
@@ -27,6 +27,7 @@ export default function NewPropertyPage() {
     feeValue: "",
   });
   const [images, setImages] = useState<string[]>([]);
+  const [thumbnail, setThumbnail] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [amenities, setAmenities] = useState<Array<{ id: string; nameAr: string; nameEn: string }>>([]);
@@ -81,6 +82,7 @@ export default function NewPropertyPage() {
         ownerName: form.ownershipType === "managed" ? form.ownerName || null : null,
         ownerPhone: form.ownershipType === "managed" ? form.ownerPhone || null : null,
         images,
+        thumbnail,
         amenityIds: selectedAmenities,
       }),
     });
@@ -187,11 +189,16 @@ export default function NewPropertyPage() {
           {images.length > 0 && (
             <div className="flex gap-2 mt-2 flex-wrap">
               {images.map((img, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border">
+                <div key={i} className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 cursor-pointer ${thumbnail === i ? "border-yellow-400" : "border-gray-200"}`} onClick={() => setThumbnail(i)}>
                   <img src={img} alt="" className="w-full h-full object-cover" />
+                  {thumbnail === i && (
+                    <span className="absolute top-0.5 start-0.5 bg-yellow-400 text-white rounded-full w-5 h-5 flex items-center justify-center">
+                      <Star className="w-3 h-3" />
+                    </span>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setImages(images.filter((_, j) => j !== i))}
+                    onClick={(e) => { e.stopPropagation(); const newImages = images.filter((_, j) => j !== i); setImages(newImages); if (thumbnail >= newImages.length) setThumbnail(Math.max(0, newImages.length - 1)); else if (thumbnail > i) setThumbnail(thumbnail - 1); }}
                     className="absolute top-0.5 end-0.5 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
                   >
                     ×
@@ -199,6 +206,9 @@ export default function NewPropertyPage() {
                 </div>
               ))}
             </div>
+          )}
+          {images.length > 1 && (
+            <p className="text-xs text-gray-400 mt-1">{locale === "ar" ? "اضغط على الصورة لتعيينها كصورة رئيسية" : "Click an image to set it as cover photo"}</p>
           )}
         </div>
 

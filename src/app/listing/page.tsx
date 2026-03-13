@@ -19,6 +19,7 @@ interface Property {
   type: string;
   description: string;
   images: string;
+  thumbnail: number;
   status: string;
   userId: string;
   user: { id: string; name: string; companyName: string; phone: string; whatsapp: string };
@@ -300,6 +301,8 @@ export default function MarketplacePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {properties.map((prop) => {
               const images: string[] = JSON.parse(prop.images || "[]");
+              const thumbIdx = prop.thumbnail || 0;
+              const coverImg = images[thumbIdx] || images[0];
               return (
                 <Link
                   key={prop.id}
@@ -307,9 +310,9 @@ export default function MarketplacePage() {
                   className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow group"
                 >
                   <div className="aspect-video bg-gray-100 relative overflow-hidden">
-                    {images.length > 0 ? (
+                    {coverImg ? (
                       <img
-                        src={images[0]}
+                        src={coverImg}
                         alt={prop.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />

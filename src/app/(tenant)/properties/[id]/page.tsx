@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { t, type Locale, formatCurrency } from "@/i18n/translations";
-import { ArrowRight, ArrowLeft, Eye, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Eye, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 
@@ -39,6 +39,7 @@ export default function PropertyViewPage() {
   const params = useParams();
   const [property, setProperty] = useState<PropertyDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lightboxIdx, setLightboxIdx] = useState(-1);
 
   const user = session?.user as any;
   const locale = (user?.locale || "ar") as Locale;
@@ -91,6 +92,31 @@ export default function PropertyViewPage() {
 
   return (
     <div>
+      {/* Lightbox */}
+      {lightboxIdx >= 0 && images.length > 0 && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center" onClick={() => setLightboxIdx(-1)}>
+          <button onClick={() => setLightboxIdx(-1)} className="absolute top-4 right-4 text-white/80 hover:text-white z-10 p-2">
+            <X className="w-6 h-6" />
+          </button>
+          <div className="absolute top-4 left-4 text-white/60 text-sm z-10">
+            {lightboxIdx + 1} / {images.length}
+          </div>
+          <div className="relative w-full h-full flex items-center justify-center px-16" onClick={(e) => e.stopPropagation()}>
+            {images.length > 1 && (
+              <>
+                <button onClick={() => setLightboxIdx((lightboxIdx - 1 + images.length) % images.length)} className="absolute left-2 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white z-10">
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button onClick={() => setLightboxIdx((lightboxIdx + 1) % images.length)} className="absolute right-2 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white z-10">
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+            <img src={images[lightboxIdx]} alt="" className="max-w-full max-h-[85vh] object-contain rounded-lg select-none" draggable={false} />
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-3 mb-6">
         <Link href="/properties" className="p-2 hover:bg-gray-100 rounded-lg">
           <BackIcon className="w-5 h-5" />
@@ -122,7 +148,7 @@ export default function PropertyViewPage() {
           {images.length > 0 && (
             <div className="grid grid-cols-2 gap-2">
               {images.map((img, i) => (
-                <div key={i} className="rounded-lg overflow-hidden border aspect-video">
+                <div key={i} className="rounded-lg overflow-hidden border aspect-video cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setLightboxIdx(i)}>
                   <img src={img} alt="" className="w-full h-full object-cover" />
                 </div>
               ))}

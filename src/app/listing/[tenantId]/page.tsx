@@ -20,6 +20,7 @@ interface Property {
   type: string;
   description: string;
   images: string;
+  thumbnail: number;
   status: string;
   amenities: Array<{ amenity: Amenity }>;
 }
@@ -190,11 +191,12 @@ export default function ListingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {properties.map((prop) => {
               const images: string[] = JSON.parse(prop.images || "[]");
+              const coverImg = images[prop.thumbnail || 0] || images[0];
               return (
                 <Link key={prop.id} href={`/listing/${params.tenantId}/${prop.id}`} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow group">
                   <div className="aspect-video bg-gray-100 relative overflow-hidden">
-                    {images.length > 0 ? (
-                      <img src={images[0]} alt={prop.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    {coverImg ? (
+                      <img src={coverImg} alt={prop.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center"><Building2 className="w-12 h-12 text-gray-300" /></div>
                     )}

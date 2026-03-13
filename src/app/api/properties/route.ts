@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { title, address, city, type, description, images, ownershipType, ownerName, ownerPhone, feeType, feeValue, amenityIds } = body;
+  const { title, address, city, type, description, images, thumbnail, ownershipType, ownerName, ownerPhone, feeType, feeValue, amenityIds } = body;
 
   if (!title || !address || !type) {
     return NextResponse.json({ error: "Title, address, and type are required" }, { status: 400 });
@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
       type,
       description: description || "",
       images: images ? JSON.stringify(images) : "[]",
+      thumbnail: thumbnail ?? 0,
       ownershipType: ownershipType || "owned",
       ownerName: ownerName || null,
       ownerPhone: ownerPhone || null,

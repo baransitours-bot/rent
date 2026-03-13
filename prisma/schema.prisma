@@ -61,6 +61,7 @@ model Property {
   type          String
   description   String            @default("")
   images        String            @default("[]")
+  thumbnail     Int               @default(0)
   status        String            @default("available")
   ownershipType String            @default("owned")
   ownerName     String?

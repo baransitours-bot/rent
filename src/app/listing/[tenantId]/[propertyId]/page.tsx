@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Building2, MapPin, Phone, ArrowRight, ArrowLeft, Check, Share2, MessageCircle, Send } from "lucide-react";
+import { Building2, MapPin, Phone, ArrowRight, ArrowLeft, Check, Share2, MessageCircle, Send, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 interface Amenity {
@@ -19,6 +19,7 @@ interface Property {
   type: string;
   description: string;
   images: string;
+  thumbnail: number;
   status: string;
   amenities: Array<{ amenity: Amenity }>;
 }
@@ -38,6 +39,72 @@ const TYPE_LABELS: Record<string, Record<string, string>> = {
   en: { apartment: "Apartment", house: "House", shop: "Shop", land: "Land", other: "Other" },
 };
 
+function Lightbox({ images, startIndex, onClose, isRTL }: {
+  images: string[];
+  startIndex: number;
+  onClose: () => void;
+  isRTL: boolean;
+}) {
+  const [current, setCurrent] = useState(startIndex);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") setCurrent((c) => (c + 1) % images.length);
+      if (e.key === "ArrowLeft") setCurrent((c) => (c - 1 + images.length) % images.length);
+    };
+    document.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [images.length, onClose]);
+
+  const prev = () => setCurrent((c) => (c - 1 + images.length) % images.length);
+  const next = () => setCurrent((c) => (c + 1) % images.length);
+
+  return (
+    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center" onClick={onClose}>
+      <button onClick={onClose} className="absolute top-4 end-4 text-white/80 hover:text-white z-10 p-2">
+        <X className="w-6 h-6" />
+      </button>
+      <div className="absolute top-4 start-4 text-white/60 text-sm z-10">
+        {current + 1} / {images.length}
+      </div>
+      <div className="relative w-full h-full flex items-center justify-center px-16" onClick={(e) => e.stopPropagation()}>
+        {images.length > 1 && (
+          <>
+            <button onClick={prev} className="absolute start-2 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white z-10">
+              {isRTL ? <ChevronRight className="w-6 h-6" /> : <ChevronLeft className="w-6 h-6" />}
+            </button>
+            <button onClick={next} className="absolute end-2 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white z-10">
+              {isRTL ? <ChevronLeft className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+            </button>
+          </>
+        )}
+        <img
+          src={images[current]}
+          alt=""
+          className="max-w-full max-h-[85vh] object-contain rounded-lg select-none"
+          draggable={false}
+        />
+      </div>
+      {images.length > 1 && (
+        <div className="absolute bottom-4 start-1/2 -translate-x-1/2 flex gap-1.5">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); setCurrent(i); }}
+              className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-white" : "bg-white/40"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PropertyDetailPage() {
   const params = useParams();
   const [data, setData] = useState<{ user: TenantUser; property: Property } | null>(null);
@@ -49,6 +116,9 @@ export default function PropertyDetailPage() {
   const [inquirySent, setInquirySent] = useState(false);
   const [inquiryForm, setInquiryForm] = useState({ senderName: "", senderPhone: "", message: "" });
   const [sendingInquiry, setSendingInquiry] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const autoSlideTimer = useRef<NodeJS.Timeout>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -61,10 +131,34 @@ export default function PropertyDetailPage() {
       .then((d) => {
         setData(d);
         if (d.user?.locale) setLocale(d.user.locale as "ar" | "en");
+        if (d.property) setActiveImage(d.property.thumbnail || 0);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, [params.tenantId, params.propertyId]);
+
+  const images = data?.property ? JSON.parse(data.property.images || "[]") as string[] : [];
+
+  // Auto-slide every 4s, pauses on interaction
+  const startAutoSlide = useCallback(() => {
+    if (autoSlideTimer.current) clearInterval(autoSlideTimer.current);
+    if (images.length > 1 && !isPaused) {
+      autoSlideTimer.current = setInterval(() => {
+        setActiveImage((prev) => (prev + 1) % images.length);
+      }, 4000);
+    }
+  }, [images.length, isPaused]);
+
+  useEffect(() => {
+    startAutoSlide();
+    return () => { if (autoSlideTimer.current) clearInterval(autoSlideTimer.current); };
+  }, [startAutoSlide]);
+
+  const goToImage = (i: number) => {
+    setActiveImage(i);
+    setIsPaused(true);
+    setTimeout(() => setIsPaused(false), 8000);
+  };
 
   const isRTL = locale === "ar";
   const txt = {
@@ -156,11 +250,14 @@ export default function PropertyDetailPage() {
   }
 
   const { user, property } = data;
-  const images: string[] = JSON.parse(property.images || "[]");
   const BackIcon = isRTL ? ArrowRight : ArrowLeft;
 
   return (
     <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-gray-50">
+      {lightboxOpen && images.length > 0 && (
+        <Lightbox images={images} startIndex={activeImage} onClose={() => setLightboxOpen(false)} isRTL={isRTL} />
+      )}
+
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -191,19 +288,54 @@ export default function PropertyDetailPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Image Gallery */}
+        {/* Image Carousel */}
         {images.length > 0 && (
           <div className="mb-6">
-            <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 mb-2">
-              <img src={images[activeImage]} alt={property.title} className="w-full h-full object-cover" />
+            <div
+              className="aspect-video rounded-xl overflow-hidden bg-gray-100 relative cursor-pointer group"
+              onClick={() => setLightboxOpen(true)}
+            >
+              <img
+                src={images[activeImage]}
+                alt={property.title}
+                className="w-full h-full object-cover transition-transform duration-500"
+              />
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); goToImage((activeImage - 1 + images.length) % images.length); }}
+                    className="absolute start-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/30 hover:bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    {isRTL ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); goToImage((activeImage + 1) % images.length); }}
+                    className="absolute end-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/30 hover:bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    {isRTL ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                  </button>
+                  <div className="absolute bottom-3 start-1/2 -translate-x-1/2 flex gap-1.5">
+                    {images.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={(e) => { e.stopPropagation(); goToImage(i); }}
+                        className={`w-2 h-2 rounded-full transition-colors ${i === activeImage ? "bg-white" : "bg-white/50"}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+              <span className="absolute top-2 end-2 bg-black/40 text-white text-xs px-2 py-1 rounded-lg backdrop-blur-sm">
+                {activeImage + 1}/{images.length}
+              </span>
             </div>
             {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto">
+              <div className="flex gap-2 overflow-x-auto mt-2 pb-1">
                 {images.map((img, i) => (
                   <button
                     key={i}
-                    onClick={() => setActiveImage(i)}
-                    className={`w-20 h-14 rounded-lg overflow-hidden border-2 shrink-0 transition-colors ${activeImage === i ? "border-blue-500" : "border-transparent"}`}
+                    onClick={() => goToImage(i)}
+                    className={`w-16 h-12 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${activeImage === i ? "border-blue-500 ring-1 ring-blue-300" : "border-transparent opacity-70 hover:opacity-100"}`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -247,7 +379,6 @@ export default function PropertyDetailPage() {
           )}
         </div>
 
-        {/* Success message */}
         {inquirySent && (
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 text-green-700 text-sm font-medium text-center">
             {txt[locale].inquirySent}
@@ -285,7 +416,6 @@ export default function PropertyDetailPage() {
             </button>
           </div>
 
-          {/* Inquiry Form */}
           {showInquiry && (
             <form onSubmit={handleInquirySubmit} className="mt-4 border-t pt-4 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

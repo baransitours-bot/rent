@@ -78,6 +78,7 @@ export async function PUT(
       type: body.type ?? existing.type,
       description: body.description ?? existing.description,
       images: body.images ? JSON.stringify(body.images) : existing.images,
+      thumbnail: body.thumbnail !== undefined ? body.thumbnail : existing.thumbnail,
       status: body.status ?? existing.status,
       ownershipType: body.ownershipType ?? existing.ownershipType,
       ownerName: body.ownerName !== undefined ? body.ownerName : existing.ownerName,
