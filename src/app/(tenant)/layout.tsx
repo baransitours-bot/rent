@@ -9,6 +9,7 @@ import {
   Building2,
   Key,
   Clock,
+  MessageCircle,
   Settings,
   LogOut,
   Menu,
@@ -55,6 +56,7 @@ function TenantLayoutInner({ children }: { children: React.ReactNode }) {
     { href: "/properties", label: t(locale, "properties"), icon: Building2 },
     { href: "/rentals", label: t(locale, "rentals"), icon: Key },
     { href: "/history", label: t(locale, "history"), icon: Clock },
+    { href: "/inquiries", label: t(locale, "inquiries"), icon: MessageCircle },
     { href: "/settings", label: t(locale, "settings"), icon: Settings },
   ];
 

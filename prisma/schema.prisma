@@ -9,24 +9,26 @@ datasource db {
 }
 
 model User {
-  id                     String     @id @default(cuid())
+  id                     String      @id @default(cuid())
   name                   String
-  email                  String     @unique
+  email                  String      @unique
   password               String
-  phone                  String     @default("")
-  companyName            String     @default("")
-  currency               String     @default("USD")
-  locale                 String     @default("ar")
-  role                   String     @default("tenant")
-  subscriptionStatus     String     @default("active")
+  phone                  String      @default("")
+  whatsapp               String      @default("")
+  companyName            String      @default("")
+  currency               String      @default("USD")
+  locale                 String      @default("ar")
+  role                   String      @default("tenant")
+  subscriptionStatus     String      @default("active")
   subscriptionStartDate  DateTime?
   subscriptionExpiryDate DateTime?
   defaultFeeType         String?
   defaultFeeValue        Float?
   lastLoginAt            DateTime?
-  createdAt              DateTime   @default(now())
-  updatedAt              DateTime   @updatedAt
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
   properties             Property[]
+  inquiries              Inquiry[]
 }
 
 model Amenity {
@@ -97,4 +99,18 @@ model Payment {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   rental     Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+}
+
+model Inquiry {
+  id            String   @id @default(cuid())
+  userId        String
+  propertyId    String
+  propertyTitle String
+  senderName    String
+  senderPhone   String   @default("")
+  message       String   @default("")
+  status        String   @default("new")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

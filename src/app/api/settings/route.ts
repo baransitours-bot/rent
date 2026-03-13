@@ -18,6 +18,7 @@ export async function GET() {
       name: true,
       email: true,
       phone: true,
+      whatsapp: true,
       companyName: true,
       locale: true,
       currency: true,
@@ -49,6 +50,7 @@ export async function PUT(request: NextRequest) {
   if (body.defaultFeeType !== undefined) data.defaultFeeType = body.defaultFeeType;
   if (body.defaultFeeValue !== undefined) data.defaultFeeValue = body.defaultFeeValue;
   if (body.phone !== undefined) data.phone = body.phone;
+  if (body.whatsapp !== undefined) data.whatsapp = body.whatsapp;
   if (body.companyName !== undefined) data.companyName = body.companyName;
 
   const user = await prisma.user.update({
@@ -59,6 +61,7 @@ export async function PUT(request: NextRequest) {
       name: true,
       email: true,
       phone: true,
+      whatsapp: true,
       companyName: true,
       locale: true,
       currency: true,

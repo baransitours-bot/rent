@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { t, type Locale } from "@/i18n/translations";
-import { ArrowRight, ArrowLeft, Upload } from "lucide-react";
+import { ArrowRight, ArrowLeft, Upload, Check } from "lucide-react";
 import Link from "next/link";
 
 export default function NewPropertyPage() {
@@ -205,12 +205,13 @@ export default function NewPropertyPage() {
                       prev.includes(a.id) ? prev.filter((id) => id !== a.id) : [...prev, a.id]
                     )
                   }
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                     selectedAmenities.includes(a.id)
                       ? "bg-green-50 border-green-300 text-green-700"
                       : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
                   }`}
                 >
+                  {selectedAmenities.includes(a.id) && <Check className="w-3 h-3" />}
                   {locale === "ar" ? a.nameAr : a.nameEn}
                 </button>
               ))}

@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [userLocale, setUserLocale] = useState("ar");
   const [currency, setCurrency] = useState("USD");
+  const [whatsapp, setWhatsapp] = useState("");
   const [defaultFeeType, setDefaultFeeType] = useState("");
   const [defaultFeeValue, setDefaultFeeValue] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function SettingsPage() {
         setName(data.name || "");
         setUserLocale(data.locale || "ar");
         setCurrency(data.currency || "USD");
+        setWhatsapp(data.whatsapp || "");
         setDefaultFeeType(data.defaultFeeType || "");
         setDefaultFeeValue(data.defaultFeeValue?.toString() || "");
       });
@@ -43,6 +45,7 @@ export default function SettingsPage() {
         name,
         locale: userLocale,
         currency,
+        whatsapp,
         defaultFeeType: defaultFeeType || null,
         defaultFeeValue: defaultFeeValue ? parseFloat(defaultFeeValue) : null,
       }),
@@ -149,6 +152,21 @@ export default function SettingsPage() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t(locale, "whatsappNumber")}
+            </label>
+            <p className="text-xs text-gray-400 mb-1.5">{t(locale, "whatsappHint")}</p>
+            <input
+              type="text"
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="+970599123456"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              dir="ltr"
+            />
           </div>
 
           <div className="border-t pt-5">

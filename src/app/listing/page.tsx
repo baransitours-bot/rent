@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Building2, MapPin, Phone, Filter, Share2, Check } from "lucide-react";
+import { Building2, MapPin, Filter } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 
@@ -21,17 +20,9 @@ interface Property {
   description: string;
   images: string;
   status: string;
+  userId: string;
+  user: { id: string; name: string; companyName: string; phone: string; whatsapp: string };
   amenities: Array<{ amenity: Amenity }>;
-}
-
-interface TenantUser {
-  id: string;
-  name: string;
-  companyName: string;
-  phone: string;
-  whatsapp: string;
-  locale: string;
-  currency: string;
 }
 
 const TYPE_LABELS: Record<string, Record<string, string>> = {
@@ -39,15 +30,13 @@ const TYPE_LABELS: Record<string, Record<string, string>> = {
   en: { apartment: "Apartment", house: "House", shop: "Shop", land: "Land", other: "Other" },
 };
 
-export default function ListingPage() {
-  const params = useParams();
-  const [data, setData] = useState<{ user: TenantUser; properties: Property[] } | null>(null);
+export default function GeneralListingPage() {
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("");
   const [amenityFilter, setAmenityFilter] = useState<string[]>([]);
   const [locale, setLocale] = useState<"ar" | "en">("ar");
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [initialLoad, setInitialLoad] = useState(true);
+  const [allAmenities, setAllAmenities] = useState<Amenity[]>([]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -59,34 +48,23 @@ export default function ListingPage() {
     if (typeFilter) qs.set("type", typeFilter);
     if (amenityFilter.length > 0) qs.set("amenities", amenityFilter.join(","));
 
-    fetch(`/api/listing/${params.tenantId}?${qs.toString()}`)
+    fetch(`/api/listing?${qs.toString()}`)
       .then((r) => r.json())
       .then((d) => {
-        setData(d);
-        if (initialLoad && d.user?.locale) {
-          setLocale(d.user.locale as "ar" | "en");
-          setInitialLoad(false);
-        }
+        setProperties(d);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [params.tenantId, typeFilter, amenityFilter]);
+  }, [typeFilter, amenityFilter]);
 
-  const [allAmenities, setAllAmenities] = useState<Amenity[]>([]);
   useEffect(() => {
     fetch("/api/amenities").then((r) => r.json()).then(setAllAmenities).catch(() => {});
   }, []);
 
   const isRTL = locale === "ar";
   const txt = {
-    ar: { available: "العقارات المتاحة", noProperties: "لا توجد عقارات متاحة حالياً", allTypes: "جميع الأنواع", switchLang: "English", shareCopied: "تم نسخ الرابط!", allListings: "جميع العقارات" },
-    en: { available: "Available Properties", noProperties: "No properties available at the moment", allTypes: "All Types", switchLang: "العربية", shareCopied: "Link copied!", allListings: "All Properties" },
-  };
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 2000);
+    ar: { title: "جميع العقارات المتاحة", noProps: "لا توجد عقارات متاحة حالياً", allTypes: "جميع الأنواع", switchLang: "English" },
+    en: { title: "All Available Properties", noProps: "No properties available at the moment", allTypes: "All Types", switchLang: "العربية" },
   };
 
   if (loading) {
@@ -97,16 +75,6 @@ export default function ListingPage() {
     );
   }
 
-  if (!data?.user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Not found</p>
-      </div>
-    );
-  }
-
-  const { user, properties } = data;
-
   return (
     <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 shadow-sm">
@@ -115,38 +83,15 @@ export default function ListingPage() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
               <Building2 className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h1 className="font-bold text-gray-900">{user.companyName || user.name}</h1>
-              {user.phone && (
-                <p className="text-xs text-gray-500 flex items-center gap-1">
-                  <Phone className="w-3 h-3" />
-                  <span dir="ltr">{user.phone}</span>
-                </p>
-              )}
-            </div>
+            <h1 className="font-bold text-gray-900">{txt[locale].title}</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/listing" className="text-xs text-gray-500 hover:text-gray-700 hidden sm:block">
-              {txt[locale].allListings}
-            </Link>
-            <button onClick={handleShare} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 relative">
-              <Share2 className="w-4 h-4" />
-              {linkCopied && (
-                <span className="absolute -bottom-7 start-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10">
-                  {txt[locale].shareCopied}
-                </span>
-              )}
-            </button>
-            <button onClick={() => setLocale(locale === "ar" ? "en" : "ar")} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              {txt[locale].switchLang}
-            </button>
-          </div>
+          <button onClick={() => setLocale(locale === "ar" ? "en" : "ar")} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            {txt[locale].switchLang}
+          </button>
         </div>
       </header>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">{txt[locale].available}</h2>
-
         <div className="bg-white rounded-xl border p-4 mb-6 space-y-3">
           <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
             <Filter className="w-4 h-4" />
@@ -164,34 +109,27 @@ export default function ListingPage() {
           </div>
           {allAmenities.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {allAmenities.map((a) => {
-                const isSelected = amenityFilter.includes(a.id);
-                return (
-                  <button
-                    key={a.id}
-                    onClick={() => setAmenityFilter((prev) => prev.includes(a.id) ? prev.filter((x) => x !== a.id) : [...prev, a.id])}
-                    className={clsx(
-                      "inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
-                      isSelected ? "bg-green-50 border-green-300 text-green-700" : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
-                    )}
-                  >
-                    {isSelected && <Check className="w-3 h-3" />}
-                    {locale === "ar" ? a.nameAr : a.nameEn}
-                  </button>
-                );
-              })}
+              {allAmenities.map((a) => (
+                <button
+                  key={a.id}
+                  onClick={() => setAmenityFilter((prev) => prev.includes(a.id) ? prev.filter((x) => x !== a.id) : [...prev, a.id])}
+                  className={clsx("px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors", amenityFilter.includes(a.id) ? "bg-green-50 border-green-300 text-green-700" : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50")}
+                >
+                  {amenityFilter.includes(a.id) && "✓ "}{locale === "ar" ? a.nameAr : a.nameEn}
+                </button>
+              ))}
             </div>
           )}
         </div>
 
         {properties.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">{txt[locale].noProperties}</div>
+          <div className="text-center py-16 text-gray-500">{txt[locale].noProps}</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {properties.map((prop) => {
               const images: string[] = JSON.parse(prop.images || "[]");
               return (
-                <Link key={prop.id} href={`/listing/${params.tenantId}/${prop.id}`} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow group">
+                <Link key={prop.id} href={`/listing/${prop.user.id}/${prop.id}`} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow group">
                   <div className="aspect-video bg-gray-100 relative overflow-hidden">
                     {images.length > 0 ? (
                       <img src={images[0]} alt={prop.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
@@ -204,10 +142,11 @@ export default function ListingPage() {
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-gray-900 mb-1">{prop.title}</h3>
-                    <p className="text-sm text-gray-500 flex items-center gap-1 mb-2">
+                    <p className="text-sm text-gray-500 flex items-center gap-1 mb-1">
                       <MapPin className="w-3.5 h-3.5 shrink-0" />
                       {prop.address}
                     </p>
+                    <p className="text-xs text-blue-600 mb-2">{prop.user.companyName || prop.user.name}</p>
                     {prop.amenities.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {prop.amenities.slice(0, 4).map((pa) => (
@@ -215,9 +154,7 @@ export default function ListingPage() {
                             {locale === "ar" ? pa.amenity.nameAr : pa.amenity.nameEn}
                           </span>
                         ))}
-                        {prop.amenities.length > 4 && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">+{prop.amenities.length - 4}</span>
-                        )}
+                        {prop.amenities.length > 4 && <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-500">+{prop.amenities.length - 4}</span>}
                       </div>
                     )}
                   </div>
