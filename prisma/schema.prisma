@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String     @id @default(cuid())
+  name                   String
+  email                  String     @unique
+  password               String
+  phone                  String     @default("")
+  companyName            String     @default("")
+  currency               String     @default("USD")
+  locale                 String     @default("ar")
+  role                   String     @default("tenant")
+  subscriptionStatus     String     @default("active")
+  subscriptionStartDate  DateTime?
+  subscriptionExpiryDate DateTime?
+  defaultFeeType         String?
+  defaultFeeValue        Float?
+  lastLoginAt            DateTime?
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+  properties             Property[]
+}
+
+model Property {
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  address       String
+  type          String
+  description   String   @default("")
+  images        String   @default("[]")
+  status        String   @default("available")
+  ownershipType String   @default("owned")
+  ownerName     String?
+  ownerPhone    String?
+  feeType       String?
+  feeValue      Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rentals       Rental[]
+}
+
+model Rental {
+  id            String    @id @default(cuid())
+  propertyId    String
+  tenantName    String
+  tenantPhone   String    @default("")
+  monthlyAmount Float
+  startDate     DateTime
+  endDate       DateTime
+  status        String    @default("active")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  payments      Payment[]
+}
+
+model Payment {
+  id         String    @id @default(cuid())
+  rentalId   String
+  monthLabel String
+  dueDate    DateTime
+  amount     Float
+  status     String    @default("unpaid")
+  paidAt     DateTime?
+  notes      String    @default("")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  rental     Rental    @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+}
