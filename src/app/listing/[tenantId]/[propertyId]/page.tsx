@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { Building2, MapPin, Phone, ArrowRight, ArrowLeft, Check, Share2, MessageCircle, Send, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Building2, MapPin, Phone, ArrowRight, ArrowLeft, Check, Share2, MessageCircle, Send, X, ChevronLeft, ChevronRight, Home, LogIn } from "lucide-react";
 import Link from "next/link";
 
 interface Amenity {
@@ -119,11 +119,15 @@ export default function PropertyDetailPage() {
   const [sendingInquiry, setSendingInquiry] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const autoSlideTimer = useRef<NodeJS.Timeout>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("lang") === "en") setLocale("en");
+    fetch("/api/auth/session").then((r) => r.json()).then((s) => {
+      if (s?.user) setIsLoggedIn(true);
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -236,15 +240,15 @@ export default function PropertyDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="w-8 h-8 border-2 border-stone-300 border-t-amber-700 rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!data?.property) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
         <p className="text-gray-500">Not found</p>
       </div>
     );
@@ -254,41 +258,52 @@ export default function PropertyDetailPage() {
   const BackIcon = isRTL ? ArrowRight : ArrowLeft;
 
   return (
-    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-gray-50">
+    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-stone-50">
       {lightboxOpen && images.length > 0 && (
         <Lightbox images={images} startIndex={activeImage} onClose={() => setLightboxOpen(false)} isRTL={isRTL} />
       )}
 
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href={`/listing/${user.slug || params.tenantId}`} className="p-2 hover:bg-gray-100 rounded-lg">
+      <header className="bg-white border-b border-stone-200">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href={`/listing/${user.slug || params.tenantId}`} className="p-2 hover:bg-stone-100 text-stone-600">
               <BackIcon className="w-5 h-5" />
             </Link>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-white" />
+            <span className="text-stone-300">|</span>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-amber-700 flex items-center justify-center">
+                <span className="text-sm font-bold text-white">{(user.companyName || user.name || "?").charAt(0)}</span>
               </div>
               <span className="font-bold text-gray-900 text-sm">{user.companyName || user.name}</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={handleShare} className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 relative">
+          <div className="flex items-center gap-3">
+            <button onClick={handleShare} className="p-2 hover:bg-stone-100 text-stone-500 relative">
               <Share2 className="w-4 h-4" />
               {linkCopied && (
-                <span className="absolute -bottom-7 start-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10">
+                <span className="absolute -bottom-7 start-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] px-2 py-1 whitespace-nowrap z-10">
                   {txt[locale].shareCopied}
                 </span>
               )}
             </button>
-            <button onClick={() => setLocale(locale === "ar" ? "en" : "ar")} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+            <button onClick={() => setLocale(locale === "ar" ? "en" : "ar")} className="text-sm text-stone-500 hover:text-stone-700 font-medium">
               {txt[locale].switchLang}
             </button>
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="px-4 py-2 bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition-colors">
+                {locale === "ar" ? "لوحة التحكم" : "Dashboard"}
+              </Link>
+            ) : (
+              <Link href="/login" className="px-4 py-2 bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition-colors flex items-center gap-2">
+                <LogIn className="w-3.5 h-3.5" />
+                {locale === "ar" ? "دخول" : "Sign In"}
+              </Link>
+            )}
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Image Carousel */}
         {images.length > 0 && (
           <div className="mb-6">
