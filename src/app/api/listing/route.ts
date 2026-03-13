@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     where,
     include: {
       user: {
-        select: { id: true, name: true, companyName: true, phone: true, whatsapp: true },
+        select: { id: true, slug: true, name: true, companyName: true, phone: true, whatsapp: true },
       },
       amenities: {
         include: { amenity: true },

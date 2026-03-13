@@ -20,12 +20,14 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [userSlug, setUserSlug] = useState("");
 
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((data) => {
         setName(data.name || "");
+        setUserSlug(data.slug || "");
         setUserLocale(data.locale || "ar");
         setCurrency(data.currency || "USD");
         setWhatsapp(data.whatsapp || "");
@@ -40,7 +42,7 @@ export default function SettingsPage() {
     setLoading(true);
     setSaved(false);
 
-    await fetch("/api/settings", {
+    const res = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -53,6 +55,8 @@ export default function SettingsPage() {
         defaultFeeValue: defaultFeeValue ? parseFloat(defaultFeeValue) : null,
       }),
     });
+    const updated = await res.json();
+    if (updated.slug) setUserSlug(updated.slug);
 
     await update({
       name,
@@ -83,14 +87,14 @@ export default function SettingsPage() {
               <input
                 type="text"
                 readOnly
-                value={typeof window !== "undefined" ? `${window.location.origin}/listing/${user.id}` : `/listing/${user.id}`}
+                value={typeof window !== "undefined" ? `${window.location.origin}/listing/${userSlug || user.id}` : `/listing/${userSlug || user.id}`}
                 className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600"
                 dir="ltr"
               />
               <button
                 type="button"
                 onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/listing/${user.id}`);
+                  navigator.clipboard.writeText(`${window.location.origin}/listing/${userSlug || user.id}`);
                   setLinkCopied(true);
                   setTimeout(() => setLinkCopied(false), 2000);
                 }}
@@ -99,7 +103,7 @@ export default function SettingsPage() {
                 <Copy className="w-4 h-4" />
               </button>
               <a
-                href={`/listing/${user.id}`}
+                href={`/listing/${userSlug || user.id}`}
                 target="_blank"
                 className="px-3 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
               >

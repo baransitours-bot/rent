@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateSlug, uniqueSlug } from "@/lib/utils";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -15,6 +16,7 @@ export async function GET() {
     where: { id: userId },
     select: {
       id: true,
+      slug: true,
       name: true,
       email: true,
       phone: true,
@@ -55,11 +57,22 @@ export async function PUT(request: NextRequest) {
   if (body.companyName !== undefined) data.companyName = body.companyName;
   if (body.listInMarketplace !== undefined) data.listInMarketplace = body.listInMarketplace;
 
+  // Auto-generate slug if name or companyName changed and user has no slug yet
+  const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: { slug: true, companyName: true, name: true } });
+  const newName = data.companyName ?? currentUser?.companyName ?? data.name ?? currentUser?.name ?? "";
+  if (newName && (!currentUser?.slug || data.companyName !== undefined || data.name !== undefined)) {
+    const baseSlug = generateSlug(newName);
+    if (baseSlug) {
+      data.slug = await uniqueSlug(baseSlug, prisma.user, userId);
+    }
+  }
+
   const user = await prisma.user.update({
     where: { id: userId },
     data,
     select: {
       id: true,
+      slug: true,
       name: true,
       email: true,
       phone: true,

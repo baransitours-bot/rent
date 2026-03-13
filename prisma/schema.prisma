@@ -10,6 +10,7 @@ datasource db {
 
 model User {
   id                     String      @id @default(cuid())
+  slug                   String      @unique @default("")
   name                   String
   email                  String      @unique
   password               String
@@ -54,6 +55,7 @@ model PropertyAmenity {
 
 model Property {
   id            String            @id @default(cuid())
+  slug          String            @default("")
   userId        String
   title         String
   address       String

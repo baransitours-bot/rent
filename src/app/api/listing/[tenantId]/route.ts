@@ -8,10 +8,17 @@ export async function GET(
 ) {
   const { tenantId } = await params;
 
-  const user = await prisma.user.findUnique({
-    where: { id: tenantId },
-    select: { id: true, name: true, companyName: true, phone: true, whatsapp: true, locale: true, currency: true },
+  // Try to find by slug first, then by ID
+  let user = await prisma.user.findFirst({
+    where: { slug: tenantId },
+    select: { id: true, slug: true, name: true, companyName: true, phone: true, whatsapp: true, locale: true, currency: true },
   });
+  if (!user) {
+    user = await prisma.user.findUnique({
+      where: { id: tenantId },
+      select: { id: true, slug: true, name: true, companyName: true, phone: true, whatsapp: true, locale: true, currency: true },
+    });
+  }
 
   if (!user) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -22,7 +29,7 @@ export async function GET(
   const amenityIds = searchParams.get("amenities")?.split(",").filter(Boolean) || [];
 
   const where: any = {
-    userId: tenantId,
+    userId: user.id,
     status: "available",
   };
 
@@ -40,7 +47,16 @@ export async function GET(
 
   const properties = await prisma.property.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      address: true,
+      type: true,
+      description: true,
+      images: true,
+      thumbnail: true,
+      status: true,
       amenities: {
         include: { amenity: true },
       },

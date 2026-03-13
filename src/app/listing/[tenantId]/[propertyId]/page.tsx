@@ -26,6 +26,7 @@ interface Property {
 
 interface TenantUser {
   id: string;
+  slug: string;
   name: string;
   companyName: string;
   phone: string;
@@ -261,7 +262,7 @@ export default function PropertyDetailPage() {
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href={`/listing/${params.tenantId}`} className="p-2 hover:bg-gray-100 rounded-lg">
+            <Link href={`/listing/${user.slug || params.tenantId}`} className="p-2 hover:bg-gray-100 rounded-lg">
               <BackIcon className="w-5 h-5" />
             </Link>
             <div className="flex items-center gap-2">

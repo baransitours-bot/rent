@@ -64,6 +64,7 @@ export async function GET() {
         email: "admin@rentapp.com",
         password: hashedPassword,
         role: "admin",
+        slug: "admin",
         subscriptionStatus: "active",
         locale: "ar",
         currency: "USD",

@@ -51,3 +51,31 @@ export function calculateFee(
   if (feeType === "percentage") return (feeValue / 100) * monthlyAmount;
   return feeValue;
 }
+
+export function generateSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[\u0600-\u06FF]+/g, (match) => match) // keep Arabic
+    .replace(/[^\w\u0600-\u06FF\s-]/g, "") // remove special chars except Arabic
+    .replace(/[\s_]+/g, "-") // spaces/underscores to hyphens
+    .replace(/-+/g, "-") // collapse multiple hyphens
+    .replace(/^-|-$/g, ""); // trim hyphens
+}
+
+export async function uniqueSlug(
+  baseSlug: string,
+  model: { findFirst: (args: any) => Promise<any> },
+  excludeId?: string
+): Promise<string> {
+  let slug = baseSlug;
+  let counter = 0;
+  while (true) {
+    const candidate = counter === 0 ? slug : `${slug}-${counter}`;
+    const where: any = { slug: candidate };
+    if (excludeId) where.id = { not: excludeId };
+    const existing = await model.findFirst({ where });
+    if (!existing) return candidate;
+    counter++;
+  }
+}

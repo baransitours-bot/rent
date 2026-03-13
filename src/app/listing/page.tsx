@@ -13,6 +13,7 @@ interface Amenity {
 
 interface Property {
   id: string;
+  slug: string;
   title: string;
   address: string;
   city: string;
@@ -22,7 +23,7 @@ interface Property {
   thumbnail: number;
   status: string;
   userId: string;
-  user: { id: string; name: string; companyName: string; phone: string; whatsapp: string };
+  user: { id: string; slug: string; name: string; companyName: string; phone: string; whatsapp: string };
   amenities: Array<{ amenity: Amenity }>;
 }
 
@@ -306,7 +307,7 @@ export default function MarketplacePage() {
               return (
                 <Link
                   key={prop.id}
-                  href={`/listing/${prop.user.id}/${prop.id}`}
+                  href={`/listing/${prop.user.slug || prop.user.id}/${prop.slug || prop.id}`}
                   className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow group"
                 >
                   <div className="aspect-video bg-gray-100 relative overflow-hidden">

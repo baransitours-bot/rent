@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateSlug, uniqueSlug } from "@/lib/utils";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -54,6 +55,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Title, address, and type are required" }, { status: 400 });
   }
 
+  // Auto-generate slug from title
+  let slug = "";
+  if (title) {
+    const baseSlug = generateSlug(title);
+    if (baseSlug) {
+      slug = await uniqueSlug(baseSlug, prisma.property);
+    }
+  }
+
   const property = await prisma.property.create({
     data: {
       userId,
@@ -61,6 +71,7 @@ export async function POST(request: NextRequest) {
       address,
       city: city || "",
       type,
+      slug,
       description: description || "",
       images: images ? JSON.stringify(images) : "[]",
       thumbnail: thumbnail ?? 0,

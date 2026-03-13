@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateSlug, uniqueSlug } from "@/lib/utils";
 
 export async function GET(
   request: NextRequest,
@@ -69,9 +70,20 @@ export async function PUT(
     }
   }
 
+  // Regenerate slug if title changed
+  let slugData: any = {};
+  const newTitle = body.title ?? existing.title;
+  if (body.title !== undefined && body.title !== existing.title) {
+    const baseSlug = generateSlug(newTitle);
+    if (baseSlug) {
+      slugData.slug = await uniqueSlug(baseSlug, prisma.property, id);
+    }
+  }
+
   const property = await prisma.property.update({
     where: { id },
     data: {
+      ...slugData,
       title: body.title ?? existing.title,
       address: body.address ?? existing.address,
       city: body.city !== undefined ? body.city : existing.city,

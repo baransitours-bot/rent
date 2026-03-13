@@ -15,6 +15,7 @@ interface Amenity {
 
 interface Property {
   id: string;
+  slug: string;
   title: string;
   address: string;
   type: string;
@@ -27,6 +28,7 @@ interface Property {
 
 interface TenantUser {
   id: string;
+  slug: string;
   name: string;
   companyName: string;
   phone: string;
@@ -193,7 +195,7 @@ export default function ListingPage() {
               const images: string[] = JSON.parse(prop.images || "[]");
               const coverImg = images[prop.thumbnail || 0] || images[0];
               return (
-                <Link key={prop.id} href={`/listing/${params.tenantId}/${prop.id}`} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow group">
+                <Link key={prop.id} href={`/listing/${user.slug || params.tenantId}/${prop.slug || prop.id}`} className="bg-white rounded-xl border overflow-hidden hover:shadow-md transition-shadow group">
                   <div className="aspect-video bg-gray-100 relative overflow-hidden">
                     {coverImg ? (
                       <img src={coverImg} alt={prop.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
