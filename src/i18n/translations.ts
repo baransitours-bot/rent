@@ -145,6 +145,13 @@ const translations = {
     settingsSaved: "تم حفظ الإعدادات",
     whatsappNumber: "رقم الواتساب",
     whatsappHint: "أضف رقم الواتساب لاستقبال طلبات العقارات مباشرة",
+    listInMarketplace: "عرض عقاراتي في السوق العام",
+    listInMarketplaceHint: "عند التفعيل، ستظهر عقاراتك في صفحة السوق العام للجميع",
+    propertyCity: "المدينة",
+    searchProperties: "بحث عن عقارات...",
+    allCities: "جميع المدن",
+    marketplace: "السوق العام",
+    resultsCount: "نتيجة",
 
     // Admin
     adminDashboard: "لوحة تحكم الإدارة",
@@ -366,6 +373,13 @@ const translations = {
     settingsSaved: "Settings saved",
     whatsappNumber: "WhatsApp Number",
     whatsappHint: "Add your WhatsApp number to receive property inquiries directly",
+    listInMarketplace: "List my properties in the public marketplace",
+    listInMarketplaceHint: "When enabled, your properties will appear in the public marketplace for everyone",
+    propertyCity: "City",
+    searchProperties: "Search properties...",
+    allCities: "All Cities",
+    marketplace: "Marketplace",
+    resultsCount: "result",
 
     adminDashboard: "Admin Dashboard",
     tenantManagement: "Tenant Management",

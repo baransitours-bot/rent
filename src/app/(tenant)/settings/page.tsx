@@ -16,6 +16,7 @@ export default function SettingsPage() {
   const [whatsapp, setWhatsapp] = useState("");
   const [defaultFeeType, setDefaultFeeType] = useState("");
   const [defaultFeeValue, setDefaultFeeValue] = useState("");
+  const [listInMarketplace, setListInMarketplace] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -30,6 +31,7 @@ export default function SettingsPage() {
         setWhatsapp(data.whatsapp || "");
         setDefaultFeeType(data.defaultFeeType || "");
         setDefaultFeeValue(data.defaultFeeValue?.toString() || "");
+        setListInMarketplace(data.listInMarketplace || false);
       });
   }, []);
 
@@ -46,6 +48,7 @@ export default function SettingsPage() {
         locale: userLocale,
         currency,
         whatsapp,
+        listInMarketplace,
         defaultFeeType: defaultFeeType || null,
         defaultFeeValue: defaultFeeValue ? parseFloat(defaultFeeValue) : null,
       }),
@@ -167,6 +170,22 @@ export default function SettingsPage() {
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               dir="ltr"
             />
+          </div>
+
+          <div className="flex items-start gap-3 bg-blue-50/50 rounded-lg p-4 border border-blue-100">
+            <input
+              type="checkbox"
+              id="marketplace"
+              checked={listInMarketplace}
+              onChange={(e) => setListInMarketplace(e.target.checked)}
+              className="mt-0.5 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+            />
+            <div>
+              <label htmlFor="marketplace" className="text-sm font-medium text-gray-800 cursor-pointer">
+                {t(locale, "listInMarketplace")}
+              </label>
+              <p className="text-xs text-gray-500 mt-0.5">{t(locale, "listInMarketplaceHint")}</p>
+            </div>
           </div>
 
           <div className="border-t pt-5">

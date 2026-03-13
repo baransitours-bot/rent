@@ -24,6 +24,7 @@ export async function GET() {
       currency: true,
       defaultFeeType: true,
       defaultFeeValue: true,
+      listInMarketplace: true,
     },
   });
 
@@ -52,6 +53,7 @@ export async function PUT(request: NextRequest) {
   if (body.phone !== undefined) data.phone = body.phone;
   if (body.whatsapp !== undefined) data.whatsapp = body.whatsapp;
   if (body.companyName !== undefined) data.companyName = body.companyName;
+  if (body.listInMarketplace !== undefined) data.listInMarketplace = body.listInMarketplace;
 
   const user = await prisma.user.update({
     where: { id: userId },
@@ -67,6 +69,7 @@ export async function PUT(request: NextRequest) {
       currency: true,
       defaultFeeType: true,
       defaultFeeValue: true,
+      listInMarketplace: true,
     },
   });
 

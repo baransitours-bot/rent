@@ -1,19 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Public general listing - all available properties from all tenants
+// Public marketplace - only properties from tenants who opted in
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
+  const city = searchParams.get("city");
+  const search = searchParams.get("search");
   const amenityIds = searchParams.get("amenities")?.split(",").filter(Boolean) || [];
 
   const where: any = {
     status: "available",
-    user: { subscriptionStatus: { in: ["active", "paused"] } },
+    user: {
+      subscriptionStatus: { in: ["active", "paused"] },
+      listInMarketplace: true,
+    },
   };
 
   if (type) {
     where.type = type;
+  }
+
+  if (city) {
+    where.city = city;
+  }
+
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { address: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
+    ];
   }
 
   if (amenityIds.length > 0) {
@@ -35,5 +52,23 @@ export async function GET(request: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(properties);
+  // Get distinct cities for filter options
+  const cities = await prisma.property.findMany({
+    where: {
+      status: "available",
+      city: { not: "" },
+      user: {
+        subscriptionStatus: { in: ["active", "paused"] },
+        listInMarketplace: true,
+      },
+    },
+    select: { city: true },
+    distinct: ["city"],
+    orderBy: { city: "asc" },
+  });
+
+  return NextResponse.json({
+    properties,
+    cities: cities.map((c) => c.city),
+  });
 }

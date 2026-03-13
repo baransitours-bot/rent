@@ -74,6 +74,7 @@ export async function PUT(
     data: {
       title: body.title ?? existing.title,
       address: body.address ?? existing.address,
+      city: body.city !== undefined ? body.city : existing.city,
       type: body.type ?? existing.type,
       description: body.description ?? existing.description,
       images: body.images ? JSON.stringify(body.images) : existing.images,

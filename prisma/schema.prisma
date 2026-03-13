@@ -16,6 +16,7 @@ model User {
   phone                  String      @default("")
   whatsapp               String      @default("")
   companyName            String      @default("")
+  listInMarketplace      Boolean     @default(false)
   currency               String      @default("USD")
   locale                 String      @default("ar")
   role                   String      @default("tenant")
@@ -56,6 +57,7 @@ model Property {
   userId        String
   title         String
   address       String
+  city          String            @default("")
   type          String
   description   String            @default("")
   images        String            @default("[]")
