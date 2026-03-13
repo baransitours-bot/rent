@@ -22,6 +22,9 @@ export async function GET(
         include: { payments: true },
         orderBy: { createdAt: "desc" },
       },
+      amenities: {
+        include: { amenity: true },
+      },
     },
   });
 
@@ -55,6 +58,16 @@ export async function PUT(
   }
 
   const body = await request.json();
+
+  // Update amenities if provided
+  if (body.amenityIds !== undefined) {
+    await prisma.propertyAmenity.deleteMany({ where: { propertyId: id } });
+    if (body.amenityIds.length > 0) {
+      await prisma.propertyAmenity.createMany({
+        data: body.amenityIds.map((aid: string) => ({ propertyId: id, amenityId: aid })),
+      });
+    }
+  }
 
   const property = await prisma.property.update({
     where: { id },

@@ -30,6 +30,8 @@ export default function EditPropertyPage() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [amenities, setAmenities] = useState<Array<{ id: string; nameAr: string; nameEn: string }>>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
   useEffect(() => {
     fetch(`/api/properties/${params.id}`)
@@ -47,8 +49,13 @@ export default function EditPropertyPage() {
           feeValue: data.feeValue?.toString() || "",
         });
         setImages(JSON.parse(data.images || "[]"));
+        setSelectedAmenities(data.amenities?.map((a: any) => a.amenityId) || []);
         setLoading(false);
       });
+    fetch("/api/amenities")
+      .then((r) => r.json())
+      .then(setAmenities)
+      .catch(() => {});
   }, [params.id]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +83,7 @@ export default function EditPropertyPage() {
         ownerName: form.ownershipType === "managed" ? form.ownerName || null : null,
         ownerPhone: form.ownershipType === "managed" ? form.ownerPhone || null : null,
         images,
+        amenityIds: selectedAmenities,
       }),
     });
     router.push(`/properties/${params.id}`);
@@ -144,6 +152,35 @@ export default function EditPropertyPage() {
             </div>
           )}
         </div>
+
+        {/* Amenities selection */}
+        {amenities.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t(locale, "selectAmenities")}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {amenities.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() =>
+                    setSelectedAmenities((prev) =>
+                      prev.includes(a.id) ? prev.filter((id) => id !== a.id) : [...prev, a.id]
+                    )
+                  }
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    selectedAmenities.includes(a.id)
+                      ? "bg-green-50 border-green-300 text-green-700"
+                      : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {locale === "ar" ? a.nameAr : a.nameEn}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">{t(locale, "ownershipType")} *</label>

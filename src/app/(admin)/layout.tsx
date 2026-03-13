@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   Shield,
+  ListChecks,
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
@@ -46,6 +47,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/admin", label: t(locale, "adminDashboard"), icon: LayoutDashboard },
     { href: "/admin/tenants", label: t(locale, "tenantManagement"), icon: Users },
+    { href: "/admin/amenities", label: t(locale, "amenityManagement"), icon: ListChecks },
   ];
 
   return (
@@ -79,7 +81,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 
           <nav className="flex-1 p-3 space-y-1">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
                   key={item.href}

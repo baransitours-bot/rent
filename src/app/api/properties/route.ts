@@ -24,6 +24,9 @@ export async function GET() {
           endDate: true,
         },
       },
+      amenities: {
+        include: { amenity: true },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -45,7 +48,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { title, address, type, description, images, ownershipType, ownerName, ownerPhone, feeType, feeValue } = body;
+  const { title, address, type, description, images, ownershipType, ownerName, ownerPhone, feeType, feeValue, amenityIds } = body;
 
   if (!title || !address || !type) {
     return NextResponse.json({ error: "Title, address, and type are required" }, { status: 400 });
@@ -64,6 +67,9 @@ export async function POST(request: NextRequest) {
       ownerPhone: ownerPhone || null,
       feeType: feeType || null,
       feeValue: feeValue != null ? feeValue : null,
+      amenities: amenityIds?.length
+        ? { create: amenityIds.map((aid: string) => ({ amenityId: aid })) }
+        : undefined,
     },
   });
 

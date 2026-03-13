@@ -25,9 +25,33 @@ export async function GET() {
     }
 
     if (admin) {
+      // Still seed amenities if missing
+      const amenityCount = await prisma.amenity.count();
+      if (amenityCount === 0) {
+        await prisma.amenity.createMany({
+          data: [
+            { nameAr: "إنترنت / واي فاي", nameEn: "Internet / WiFi", icon: "wifi" },
+            { nameAr: "مفروشة", nameEn: "Furnished", icon: "sofa" },
+            { nameAr: "غير مفروشة", nameEn: "Unfurnished", icon: "sofa" },
+            { nameAr: "موقف سيارات", nameEn: "Parking", icon: "car" },
+            { nameAr: "مياه", nameEn: "Water", icon: "droplets" },
+            { nameAr: "كهرباء", nameEn: "Electricity", icon: "zap" },
+            { nameAr: "تكييف", nameEn: "Air Conditioning", icon: "wind" },
+            { nameAr: "مصعد", nameEn: "Elevator", icon: "building" },
+            { nameAr: "حراسة أمنية", nameEn: "Security", icon: "shield" },
+            { nameAr: "بلكونة", nameEn: "Balcony", icon: "sun" },
+            { nameAr: "تلفزيون", nameEn: "TV", icon: "tv" },
+            { nameAr: "مطبخ مجهز", nameEn: "Equipped Kitchen", icon: "utensils" },
+            { nameAr: "صالة رياضية", nameEn: "Gym", icon: "dumbbell" },
+            { nameAr: "مسبح", nameEn: "Swimming Pool", icon: "waves" },
+            { nameAr: "حديقة", nameEn: "Garden", icon: "trees" },
+            { nameAr: "غاز مركزي", nameEn: "Central Gas", icon: "thermometer" },
+          ],
+        });
+      }
       return NextResponse.json({
         success: true,
-        message: "Setup already complete. Admin user exists.",
+        message: "Setup already complete. Admin user exists. Amenities seeded.",
         login: { email: "admin@rentapp.com", password: "admin123" },
       });
     }
@@ -46,9 +70,34 @@ export async function GET() {
       },
     });
 
+    // Seed default amenities
+    const amenityCount = await prisma.amenity.count();
+    if (amenityCount === 0) {
+      await prisma.amenity.createMany({
+        data: [
+          { nameAr: "إنترنت / واي فاي", nameEn: "Internet / WiFi", icon: "wifi" },
+          { nameAr: "مفروشة", nameEn: "Furnished", icon: "sofa" },
+          { nameAr: "غير مفروشة", nameEn: "Unfurnished", icon: "sofa" },
+          { nameAr: "موقف سيارات", nameEn: "Parking", icon: "car" },
+          { nameAr: "مياه", nameEn: "Water", icon: "droplets" },
+          { nameAr: "كهرباء", nameEn: "Electricity", icon: "zap" },
+          { nameAr: "تكييف", nameEn: "Air Conditioning", icon: "wind" },
+          { nameAr: "مصعد", nameEn: "Elevator", icon: "building" },
+          { nameAr: "حراسة أمنية", nameEn: "Security", icon: "shield" },
+          { nameAr: "بلكونة", nameEn: "Balcony", icon: "sun" },
+          { nameAr: "تلفزيون", nameEn: "TV", icon: "tv" },
+          { nameAr: "مطبخ مجهز", nameEn: "Equipped Kitchen", icon: "utensils" },
+          { nameAr: "صالة رياضية", nameEn: "Gym", icon: "dumbbell" },
+          { nameAr: "مسبح", nameEn: "Swimming Pool", icon: "waves" },
+          { nameAr: "حديقة", nameEn: "Garden", icon: "trees" },
+          { nameAr: "غاز مركزي", nameEn: "Central Gas", icon: "thermometer" },
+        ],
+      });
+    }
+
     return NextResponse.json({
       success: true,
-      message: "Admin user created successfully!",
+      message: "Admin user created and default amenities seeded!",
       login: { email: "admin@rentapp.com", password: "admin123" },
     });
   } catch (error: any) {

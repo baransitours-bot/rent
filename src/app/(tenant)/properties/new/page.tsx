@@ -28,8 +28,10 @@ export default function NewPropertyPage() {
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [amenities, setAmenities] = useState<Array<{ id: string; nameAr: string; nameEn: string }>>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
-  // Load default fee settings
+  // Load default fee settings and amenities
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
@@ -42,6 +44,10 @@ export default function NewPropertyPage() {
           }));
         }
       });
+    fetch("/api/amenities")
+      .then((r) => r.json())
+      .then(setAmenities)
+      .catch(() => {});
   }, []);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +80,7 @@ export default function NewPropertyPage() {
         ownerName: form.ownershipType === "managed" ? form.ownerName || null : null,
         ownerPhone: form.ownershipType === "managed" ? form.ownerPhone || null : null,
         images,
+        amenityIds: selectedAmenities,
       }),
     });
 
@@ -181,6 +188,35 @@ export default function NewPropertyPage() {
             </div>
           )}
         </div>
+
+        {/* Amenities selection */}
+        {amenities.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t(locale, "selectAmenities")}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {amenities.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() =>
+                    setSelectedAmenities((prev) =>
+                      prev.includes(a.id) ? prev.filter((id) => id !== a.id) : [...prev, a.id]
+                    )
+                  }
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    selectedAmenities.includes(a.id)
+                      ? "bg-green-50 border-green-300 text-green-700"
+                      : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {locale === "ar" ? a.nameAr : a.nameEn}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Ownership type toggle */}
         <div>

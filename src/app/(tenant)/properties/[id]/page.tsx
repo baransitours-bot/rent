@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { t, type Locale, formatCurrency } from "@/i18n/translations";
-import { ArrowRight, ArrowLeft, Eye } from "lucide-react";
+import { ArrowRight, ArrowLeft, Eye, Check } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 
@@ -21,6 +21,9 @@ interface PropertyDetail {
   ownerPhone: string | null;
   feeType: string | null;
   feeValue: number | null;
+  amenities: Array<{
+    amenity: { id: string; nameAr: string; nameEn: string; icon: string };
+  }>;
   rentals: Array<{
     id: string;
     tenantName: string;
@@ -126,6 +129,24 @@ export default function PropertyViewPage() {
             </div>
           )}
         </div>
+
+        {/* Amenities */}
+        {property.amenities?.length > 0 && (
+          <div className="mt-6 pt-6 border-t">
+            <h3 className="font-medium text-gray-700 mb-3">{t(locale, "includedServices")}</h3>
+            <div className="flex flex-wrap gap-2">
+              {property.amenities.map((pa) => (
+                <span
+                  key={pa.amenity.id}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 text-xs font-medium"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  {locale === "ar" ? pa.amenity.nameAr : pa.amenity.nameEn}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Managed property info */}
         {property.ownershipType === "managed" && (

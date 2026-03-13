@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { t, type Locale, CURRENCIES } from "@/i18n/translations";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Copy, ExternalLink } from "lucide-react";
 
 export default function SettingsPage() {
   const { data: session, update } = useSession();
@@ -17,6 +17,7 @@ export default function SettingsPage() {
   const [defaultFeeValue, setDefaultFeeValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -68,6 +69,43 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t(locale, "settings")}</h1>
 
       <div className="max-w-lg">
+        {/* Public Listing Link */}
+        {user?.id && (
+          <div className="bg-white rounded-xl border p-6 mb-6">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">{t(locale, "viewListing")}</h3>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={typeof window !== "undefined" ? `${window.location.origin}/listing/${user.id}` : `/listing/${user.id}`}
+                className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600"
+                dir="ltr"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/listing/${user.id}`);
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                }}
+                className="px-3 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+              <a
+                href={`/listing/${user.id}`}
+                target="_blank"
+                className="px-3 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
+            {linkCopied && (
+              <p className="text-green-600 text-xs mt-2">{t(locale, "linkCopied")}</p>
+            )}
+          </div>
+        )}
+
         <form onSubmit={handleSave} className="bg-white rounded-xl border p-6 space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

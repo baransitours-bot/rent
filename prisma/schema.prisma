@@ -29,24 +29,45 @@ model User {
   properties             Property[]
 }
 
+model Amenity {
+  id        String            @id @default(cuid())
+  nameAr    String
+  nameEn    String
+  icon      String            @default("check")
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  properties PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  id         String   @id @default(cuid())
+  propertyId String
+  amenityId  String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, amenityId])
+}
+
 model Property {
-  id            String   @id @default(cuid())
+  id            String            @id @default(cuid())
   userId        String
   title         String
   address       String
   type          String
-  description   String   @default("")
-  images        String   @default("[]")
-  status        String   @default("available")
-  ownershipType String   @default("owned")
+  description   String            @default("")
+  images        String            @default("[]")
+  status        String            @default("available")
+  ownershipType String            @default("owned")
   ownerName     String?
   ownerPhone    String?
   feeType       String?
   feeValue      Float?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   rentals       Rental[]
+  amenities     PropertyAmenity[]
 }
 
 model Rental {
