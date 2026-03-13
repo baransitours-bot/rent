@@ -1,6 +1,6 @@
 "use client";
 
-import { SessionProvider, useSession } from "next-auth/react";
+import { SessionProvider, useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { t, type Locale } from "@/i18n/translations";
@@ -42,7 +42,7 @@ function TenantLayoutInner({ children }: { children: React.ReactNode }) {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
@@ -59,17 +59,17 @@ function TenantLayoutInner({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-gray-50">
+    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-gray-50 text-gray-900">
       {isPaused && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-amber-800 text-sm flex items-center gap-2">
+        <div className="bg-amber-50 border-b border-amber-300 px-4 py-2.5 text-amber-800 text-sm flex items-center gap-2 font-medium">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           {t(locale, "accountPausedNotice")}
         </div>
       )}
 
       {/* Mobile header */}
-      <div className="lg:hidden flex items-center justify-between bg-white border-b px-4 py-3">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+      <div className="lg:hidden flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-700">
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
         <span className="font-bold text-gray-800">{t(locale, "appName")}</span>
@@ -80,23 +80,23 @@ function TenantLayoutInner({ children }: { children: React.ReactNode }) {
         {/* Sidebar */}
         <aside
           className={clsx(
-            "fixed lg:sticky top-0 h-screen w-64 bg-white border-e shadow-sm z-40 flex flex-col transition-transform lg:translate-x-0",
+            "fixed lg:sticky top-0 h-screen w-64 bg-white border-e border-gray-200 shadow-sm z-40 flex flex-col transition-transform lg:translate-x-0",
             sidebarOpen ? "translate-x-0" : isRTL ? "translate-x-full" : "-translate-x-full"
           )}
         >
-          <div className="p-6 border-b">
+          <div className="p-5 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-blue-600" />
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-200">
+                <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="font-bold text-gray-800">{t(locale, "appName")}</h2>
+                <h2 className="font-bold text-gray-900">{t(locale, "appName")}</h2>
                 <p className="text-xs text-gray-500">{user?.name}</p>
               </div>
             </div>
           </div>
 
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-3 space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               return (
@@ -105,10 +105,10 @@ function TenantLayoutInner({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={clsx(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
                     isActive
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-blue-50 text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   )}
                 >
                   <item.icon className="w-5 h-5" />
@@ -118,13 +118,10 @@ function TenantLayoutInner({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="p-4 border-t">
+          <div className="p-3 border-t border-gray-200">
             <button
-              onClick={() => {
-                const { signOut } = require("next-auth/react");
-                signOut({ callbackUrl: "/login" });
-              }}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 w-full transition-colors"
             >
               <LogOut className="w-5 h-5" />
               {t(locale, "logout")}
@@ -135,7 +132,7 @@ function TenantLayoutInner({ children }: { children: React.ReactNode }) {
         {/* Overlay */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/20 z-30 lg:hidden"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
