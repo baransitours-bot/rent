@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { t, type Locale, formatCurrency } from "@/i18n/translations";
 import { Plus, Search, Key, MoreVertical, CreditCard, Pencil, XCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -27,6 +27,7 @@ export default function RentalsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [properties, setProperties] = useState<Array<{ id: string; title: string; status: string }>>([]);
   const [editingRental, setEditingRental] = useState<Rental | null>(null);
@@ -240,41 +241,21 @@ export default function RentalsPage() {
                       </span>
                     </td>
                     <td className="p-3">
-                      <div className="relative">
-                        <button onClick={() => setOpenMenu(openMenu === r.id ? null : r.id)} className="p-1.5 text-gray-500 hover:bg-gray-100 rounded">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        {openMenu === r.id && (
-                          <div className="absolute end-0 top-8 bg-white border rounded-lg shadow-lg z-10 w-48">
-                            <Link
-                              href={`/rentals/${r.id}/payments`}
-                              className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 w-full"
-                              onClick={() => setOpenMenu(null)}
-                            >
-                              <CreditCard className="w-4 h-4" />
-                              {t(locale, "payments")}
-                            </Link>
-                            {!isPaused && (
-                              <button onClick={() => handleEdit(r)} className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 w-full">
-                                <Pencil className="w-4 h-4" />
-                                {t(locale, "editRental")}
-                              </button>
-                            )}
-                            {!isPaused && r.status === "active" && (
-                              <button onClick={() => handleEnd(r.id)} className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 w-full text-amber-600">
-                                <XCircle className="w-4 h-4" />
-                                {t(locale, "endRental")}
-                              </button>
-                            )}
-                            {!isPaused && (
-                              <button onClick={() => handleDelete(r.id)} className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-gray-50 w-full text-red-600">
-                                <Trash2 className="w-4 h-4" />
-                                {t(locale, "delete")}
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                      <button
+                        onClick={(e) => {
+                          if (openMenu === r.id) {
+                            setOpenMenu(null);
+                            setMenuPos(null);
+                          } else {
+                            const rect = (e.target as HTMLElement).getBoundingClientRect();
+                            setMenuPos({ top: rect.bottom + 4, left: rect.left - 150 });
+                            setOpenMenu(r.id);
+                          }
+                        }}
+                        className="p-1.5 text-gray-500 hover:bg-gray-100 rounded"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -283,6 +264,48 @@ export default function RentalsPage() {
           </div>
         )}
       </div>
+
+      {/* Fixed dropdown menu */}
+      {openMenu && menuPos && (() => {
+        const r = filtered.find((r) => r.id === openMenu);
+        if (!r) return null;
+        return (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => { setOpenMenu(null); setMenuPos(null); }} />
+            <div
+              className="fixed z-50 bg-white border border-gray-200 rounded-xl shadow-xl w-52 py-1"
+              style={{ top: menuPos.top, left: Math.max(8, menuPos.left) }}
+            >
+              <Link
+                href={`/rentals/${r.id}/payments`}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 w-full"
+                onClick={() => { setOpenMenu(null); setMenuPos(null); }}
+              >
+                <CreditCard className="w-4 h-4" />
+                {t(locale, "payments")}
+              </Link>
+              {!isPaused && (
+                <button onClick={() => { handleEdit(r); setMenuPos(null); }} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 w-full">
+                  <Pencil className="w-4 h-4" />
+                  {t(locale, "editRental")}
+                </button>
+              )}
+              {!isPaused && r.status === "active" && (
+                <button onClick={() => { handleEnd(r.id); setMenuPos(null); }} className="flex items-center gap-2 px-4 py-2.5 text-sm text-amber-600 hover:bg-amber-50 w-full">
+                  <XCircle className="w-4 h-4" />
+                  {t(locale, "endRental")}
+                </button>
+              )}
+              {!isPaused && (
+                <button onClick={() => { handleDelete(r.id); setMenuPos(null); }} className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full">
+                  <Trash2 className="w-4 h-4" />
+                  {t(locale, "delete")}
+                </button>
+              )}
+            </div>
+          </>
+        );
+      })()}
 
       {/* Add/Edit Rental Modal */}
       {showAddModal && (
