@@ -10,6 +10,7 @@ import clsx from "clsx";
 interface Rental {
   id: string;
   tenantName: string;
+  tenantPhone: string;
   monthlyAmount: number;
   startDate: string;
   endDate: string;
@@ -97,7 +98,7 @@ export default function RentalsPage() {
     setForm({
       propertyId: rental.property.id,
       tenantName: rental.tenantName,
-      tenantPhone: "",
+      tenantPhone: rental.tenantPhone || "",
       monthlyAmount: rental.monthlyAmount.toString(),
       startDate: new Date(rental.startDate).toISOString().split("T")[0],
       endDate: new Date(rental.endDate).toISOString().split("T")[0],
