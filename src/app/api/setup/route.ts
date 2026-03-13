@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcryptjs from "bcryptjs";
+import { generateSlug, uniqueSlug } from "@/lib/utils";
 
 export async function GET() {
   try {
@@ -49,9 +50,36 @@ export async function GET() {
           ],
         });
       }
+      // Backfill slugs for users without them
+      const usersWithoutSlugs = await prisma.user.findMany({
+        where: { slug: "" },
+        select: { id: true, name: true, companyName: true },
+      });
+      for (const u of usersWithoutSlugs) {
+        const baseName = u.companyName || u.name || u.id;
+        const baseSlug = generateSlug(baseName);
+        if (baseSlug) {
+          const slug = await uniqueSlug(baseSlug, prisma.user, u.id);
+          await prisma.user.update({ where: { id: u.id }, data: { slug } });
+        }
+      }
+
+      // Backfill slugs for properties without them
+      const propsWithoutSlugs = await prisma.property.findMany({
+        where: { slug: "" },
+        select: { id: true, title: true },
+      });
+      for (const p of propsWithoutSlugs) {
+        const baseSlug = generateSlug(p.title || p.id);
+        if (baseSlug) {
+          const slug = await uniqueSlug(baseSlug, prisma.property, p.id);
+          await prisma.property.update({ where: { id: p.id }, data: { slug } });
+        }
+      }
+
       return NextResponse.json({
         success: true,
-        message: "Setup already complete. Admin user exists. Amenities seeded.",
+        message: `Setup complete. Admin exists. Amenities seeded. Backfilled slugs for ${usersWithoutSlugs.length} users and ${propsWithoutSlugs.length} properties.`,
         login: { email: "admin@rentapp.com", password: "admin123" },
       });
     }

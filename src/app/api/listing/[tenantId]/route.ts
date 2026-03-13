@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { generateSlug, uniqueSlug } from "@/lib/utils";
 
 // Public endpoint - no auth required
 export async function GET(
@@ -22,6 +23,17 @@ export async function GET(
 
   if (!user) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Lazy slug generation for user
+  if (!user.slug) {
+    const baseName = user.companyName || user.name || user.id;
+    const baseSlug = generateSlug(baseName);
+    if (baseSlug) {
+      const slug = await uniqueSlug(baseSlug, prisma.user, user.id);
+      await prisma.user.update({ where: { id: user.id }, data: { slug } });
+      user = { ...user, slug };
+    }
   }
 
   const { searchParams } = new URL(request.url);
@@ -63,6 +75,18 @@ export async function GET(
     },
     orderBy: { createdAt: "desc" },
   });
+
+  // Lazy slug generation for properties
+  for (let i = 0; i < properties.length; i++) {
+    if (!properties[i].slug) {
+      const baseSlug = generateSlug(properties[i].title || properties[i].id);
+      if (baseSlug) {
+        const slug = await uniqueSlug(baseSlug, prisma.property, properties[i].id);
+        await prisma.property.update({ where: { id: properties[i].id }, data: { slug } });
+        properties[i] = { ...properties[i], slug };
+      }
+    }
+  }
 
   return NextResponse.json({ user, properties });
 }

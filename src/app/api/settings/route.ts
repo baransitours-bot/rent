@@ -12,7 +12,7 @@ export async function GET() {
 
   const userId = (session.user as any).id;
 
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -32,6 +32,17 @@ export async function GET() {
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  // Auto-generate slug if missing (lazy migration for existing users)
+  if (!user.slug) {
+    const baseName = user.companyName || user.name || userId;
+    const baseSlug = generateSlug(baseName);
+    if (baseSlug) {
+      const slug = await uniqueSlug(baseSlug, prisma.user, userId);
+      await prisma.user.update({ where: { id: userId }, data: { slug } });
+      user = { ...user, slug };
+    }
   }
 
   return NextResponse.json(user);
