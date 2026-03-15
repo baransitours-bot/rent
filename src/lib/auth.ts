@@ -8,15 +8,35 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        const identifier = credentials.email.trim();
+
+        // Try email first, then phone number
+        let user = await prisma.user.findUnique({
+          where: { email: identifier },
         });
+
+        if (!user) {
+          // Try matching by phone (strip non-digits for flexible matching)
+          const cleanPhone = identifier.replace(/[^0-9+]/g, "");
+          if (cleanPhone.length >= 6) {
+            user = await prisma.user.findFirst({
+              where: {
+                phone: { not: "" },
+                OR: [
+                  { phone: identifier },
+                  { phone: cleanPhone },
+                  { phone: { endsWith: cleanPhone.slice(-9) } },
+                ],
+              },
+            });
+          }
+        }
 
         if (!user) return null;
 

@@ -7,7 +7,7 @@ import { Home, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setLoading(true);
 
     const result = await signIn("credentials", {
-      email,
+      email: identifier,
       password,
       redirect: false,
     });
@@ -82,15 +82,15 @@ export default function LoginPage() {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  البريد الإلكتروني / Email
+                  البريد الإلكتروني أو رقم الهاتف / Email or Phone
                 </label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   required
                   className="w-full px-4 py-3 bg-stone-50 border border-stone-200 text-gray-900 placeholder-stone-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
-                  placeholder="email@example.com"
+                  placeholder="email@example.com / +970599123456"
                   dir="ltr"
                 />
               </div>
