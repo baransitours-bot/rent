@@ -197,7 +197,7 @@ export default function PropertyDetailPage() {
           <h3 className="text-[13px] font-semibold text-zinc-700 mb-3">{txt[locale].contact}</h3>
           <div className="flex flex-wrap gap-2">
             {user.whatsapp && <button onClick={handleWhatsApp} className="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 text-white rounded-lg text-[13px] font-medium hover:bg-emerald-700"><MessageCircle className="w-3.5 h-3.5" />{txt[locale].whatsappChat}</button>}
-            {user.phone && <a href={`tel:${user.phone}`} className="inline-flex items-center gap-2 px-3.5 py-2 bg-zinc-900 text-white rounded-lg text-[13px] font-medium hover:bg-zinc-800"><Phone className="w-3.5 h-3.5" /><span dir="ltr">{user.phone}</span></a>}
+            {user.phone && <a href={`tel:${user.phone}`} className="inline-flex items-center gap-2 px-3.5 py-2 text-white rounded-lg text-[13px] font-medium hover:opacity-90" style={{ backgroundColor: bc }}><Phone className="w-3.5 h-3.5" /><span dir="ltr">{user.phone}</span></a>}
             <button onClick={() => setShowInquiry(!showInquiry)} className="inline-flex items-center gap-2 px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-lg text-[13px] font-medium hover:bg-zinc-50"><Send className="w-3.5 h-3.5" />{txt[locale].sendInquiry}</button>
           </div>
 
@@ -209,7 +209,7 @@ export default function PropertyDetailPage() {
               </div>
               <textarea placeholder={txt[locale].yourMessage} value={inquiryForm.message} onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })} rows={3} className="w-full px-3 py-2.5 border border-zinc-200 rounded-lg text-[13px] outline-none bg-zinc-50 placeholder-zinc-400 resize-none" />
               <div className="flex gap-2">
-                <button type="submit" disabled={sendingInquiry} className="px-4 py-2.5 bg-zinc-900 text-white rounded-lg text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-50">{sendingInquiry ? "..." : txt[locale].send}</button>
+                <button type="submit" disabled={sendingInquiry} className="px-4 py-2.5 text-white rounded-lg text-[13px] font-medium hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: bc }}>{sendingInquiry ? "..." : txt[locale].send}</button>
                 <button type="button" onClick={() => setShowInquiry(false)} className="px-4 py-2.5 border border-zinc-200 text-zinc-600 rounded-lg text-[13px] font-medium hover:bg-zinc-50">{txt[locale].close}</button>
               </div>
             </form>

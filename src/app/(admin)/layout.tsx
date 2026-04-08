@@ -115,7 +115,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
 
-          <div className="p-4 lg:p-8 max-w-6xl mx-auto animate-fade-up">
+          <div className="p-4 lg:p-8 max-w-6xl mx-auto">
             {children}
           </div>
         </main>

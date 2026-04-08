@@ -90,9 +90,9 @@ export default function MarketplacePage() {
           <div className="flex items-center gap-2.5">
             <button onClick={() => setLocale(locale === "ar" ? "en" : "ar")} className="text-[13px] text-zinc-400 hover:text-zinc-600 font-medium">{txt[locale].switchLang}</button>
             {isLoggedIn ? (
-              <Link href="/dashboard" className="px-3.5 py-2 bg-zinc-900 text-white text-[13px] font-medium rounded-lg hover:bg-zinc-800 transition-colors">{txt[locale].backToDashboard}</Link>
+              <Link href="/dashboard" className="px-3.5 py-2 text-white text-[13px] font-medium rounded-lg hover:opacity-90 transition-colors" style={{ backgroundColor: brand.color }}>{txt[locale].backToDashboard}</Link>
             ) : (
-              <Link href="/login" className="px-3.5 py-2 bg-zinc-900 text-white text-[13px] font-medium rounded-lg hover:bg-zinc-800 flex items-center gap-1.5 transition-colors"><LogIn className="w-3.5 h-3.5" />{txt[locale].login}</Link>
+              <Link href="/login" className="px-3.5 py-2 text-white text-[13px] font-medium rounded-lg hover:opacity-90 flex items-center gap-1.5 transition-colors" style={{ backgroundColor: brand.color }}><LogIn className="w-3.5 h-3.5" />{txt[locale].login}</Link>
             )}
           </div>
         </div>

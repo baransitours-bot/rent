@@ -20,9 +20,13 @@ body {
 }
 
 /* ── Force light mode ── */
-input, select, textarea, button {
+input, select, textarea {
   color: #18181b;
   background-color: #ffffff;
+}
+button {
+  color: #18181b;
+  background-color: transparent;
 }
 
 input::placeholder, textarea::placeholder {

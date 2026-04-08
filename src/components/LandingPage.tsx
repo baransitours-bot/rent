@@ -68,7 +68,7 @@ export default function LandingPage() {
             <Link href="/listing" className="hover:text-zinc-900 transition-colors">السوق</Link>
           </div>
 
-          <Link href="/login" className="px-4 py-2 bg-zinc-900 text-white text-[13px] font-medium rounded-lg hover:bg-zinc-800 transition-colors">
+          <Link href="/login" className="px-4 py-2 text-white text-[13px] font-medium rounded-lg hover:opacity-90 transition-colors" style={{ backgroundColor: c }}>
             تسجيل الدخول
           </Link>
         </div>
@@ -93,7 +93,7 @@ export default function LandingPage() {
                   <input type="text" placeholder="ابحث بالمنطقة، المدينة، أو اسم العقار..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full py-3.5 text-sm text-zinc-900 placeholder-zinc-400 outline-none bg-transparent" />
                 </div>
-                <Link href="/listing" className="px-6 py-3.5 bg-zinc-900 text-white text-[13px] font-medium flex items-center gap-2 shrink-0 hover:bg-zinc-800 transition-colors">
+                <Link href="/listing" className="px-6 py-3.5 text-white text-[13px] font-medium flex items-center gap-2 shrink-0 hover:opacity-90 transition-colors" style={{ backgroundColor: c }}>
                   تصفّح الكل <ArrowLeft className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -190,7 +190,7 @@ export default function LandingPage() {
 
           {filteredProperties.length > 6 && (
             <div className="mt-8 text-center">
-              <Link href="/listing" className="inline-flex items-center gap-2 px-6 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-lg hover:bg-zinc-800 transition-colors">
+              <Link href="/listing" className="inline-flex items-center gap-2 px-6 py-2.5 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-colors" style={{ backgroundColor: c }}>
                 تصفّح جميع العقارات ({filteredProperties.length}) <ArrowLeft className="w-3.5 h-3.5" />
               </Link>
             </div>
