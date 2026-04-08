@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Public marketplace - only properties from tenants who opted in
+const PAGE_SIZE = 12;
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
   const city = searchParams.get("city");
   const search = searchParams.get("search");
   const amenityIds = searchParams.get("amenities")?.split(",").filter(Boolean) || [];
+  const cursor = searchParams.get("cursor");
+  const limit = Math.min(parseInt(searchParams.get("limit") || "") || PAGE_SIZE, 50);
 
   const where: any = {
     status: "available",
@@ -17,14 +20,8 @@ export async function GET(request: NextRequest) {
     },
   };
 
-  if (type) {
-    where.type = type;
-  }
-
-  if (city) {
-    where.city = city;
-  }
-
+  if (type) where.type = type;
+  if (city) where.city = city;
   if (search) {
     where.OR = [
       { title: { contains: search, mode: "insensitive" } },
@@ -32,11 +29,8 @@ export async function GET(request: NextRequest) {
       { description: { contains: search, mode: "insensitive" } },
     ];
   }
-
   if (amenityIds.length > 0) {
-    where.amenities = {
-      some: { amenityId: { in: amenityIds } },
-    };
+    where.amenities = { some: { amenityId: { in: amenityIds } } };
   }
 
   const properties = await prisma.property.findMany({
@@ -45,12 +39,16 @@ export async function GET(request: NextRequest) {
       user: {
         select: { id: true, slug: true, name: true, companyName: true, phone: true, whatsapp: true },
       },
-      amenities: {
-        include: { amenity: true },
-      },
+      amenities: { include: { amenity: true } },
     },
     orderBy: { createdAt: "desc" },
+    take: limit + 1,
+    ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
   });
+
+  const hasMore = properties.length > limit;
+  const items = hasMore ? properties.slice(0, limit) : properties;
+  const nextCursor = hasMore ? items[items.length - 1].id : null;
 
   // Get distinct cities for filter options
   const cities = await prisma.property.findMany({
@@ -72,8 +70,10 @@ export async function GET(request: NextRequest) {
   const gaTrackingId = gaSetting?.value || "";
 
   return NextResponse.json({
-    properties,
+    properties: items,
     cities: cities.map((c) => c.city),
     gaTrackingId,
+    nextCursor,
+    hasMore,
   });
 }

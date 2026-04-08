@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 
 export function Dropdown({ label, value, options, onChange }: {
   label: string;
@@ -27,21 +27,22 @@ export function Dropdown({ label, value, options, onChange }: {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 text-sm hover:border-stone-300 transition-colors min-w-[140px]"
+        className="flex items-center gap-1.5 px-3 py-2 bg-white border border-zinc-200 rounded-lg text-[13px] hover:border-zinc-300 transition-colors min-w-[120px]"
       >
-        <span className="text-stone-400 text-xs">{label}</span>
-        <span className="font-medium text-gray-900 truncate">{selected?.label || label}</span>
-        <ChevronDown className={`w-3.5 h-3.5 text-stone-400 ms-auto shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+        <span className="text-zinc-400 text-[11px]">{label}:</span>
+        <span className="font-medium text-zinc-900 truncate">{selected?.label || label}</span>
+        <ChevronDown className={`w-3 h-3 text-zinc-400 ms-auto shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="absolute top-full mt-1 start-0 bg-white border border-stone-200 shadow-lg z-20 min-w-[200px] py-1 max-h-60 overflow-y-auto">
+        <div className="absolute top-full mt-1 start-0 bg-white border border-zinc-200 rounded-lg shadow-lg shadow-zinc-100 z-20 min-w-[180px] py-1 max-h-60 overflow-y-auto">
           {options.map((opt) => (
             <button
               key={opt.value}
               onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={`w-full text-start px-4 py-2.5 text-sm hover:bg-stone-50 transition-colors ${value === opt.value ? "bg-amber-50 text-amber-800 font-medium" : "text-gray-700"}`}
+              className={`w-full text-start px-3 py-2 text-[13px] hover:bg-zinc-50 transition-colors flex items-center justify-between ${value === opt.value ? "bg-zinc-50 text-zinc-900 font-medium" : "text-zinc-600"}`}
             >
               {opt.label}
+              {value === opt.value && <Check className="w-3.5 h-3.5 text-zinc-900" />}
             </button>
           ))}
         </div>
@@ -76,32 +77,34 @@ export function AmenityDropdown({ amenities, selected, onChange, locale }: {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 text-sm hover:border-stone-300 transition-colors"
+        className="flex items-center gap-1.5 px-3 py-2 bg-white border border-zinc-200 rounded-lg text-[13px] hover:border-zinc-300 transition-colors"
       >
-        <span className="text-stone-400 text-xs">{locale === "ar" ? "الخدمات" : "Amenities"}</span>
+        <span className="text-zinc-400 text-[11px]">{locale === "ar" ? "الخدمات" : "Amenities"}</span>
         {selected.length > 0 && (
-          <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-1.5 py-0.5">{selected.length}</span>
+          <span className="bg-zinc-900 text-white text-[10px] font-semibold w-4.5 h-4.5 rounded-full flex items-center justify-center leading-none min-w-[18px] min-h-[18px]">{selected.length}</span>
         )}
-        <ChevronDown className={`w-3.5 h-3.5 text-stone-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-3 h-3 text-zinc-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="absolute top-full mt-1 start-0 bg-white border border-stone-200 shadow-lg z-20 min-w-[240px] py-1 max-h-60 overflow-y-auto">
+        <div className="absolute top-full mt-1 start-0 bg-white border border-zinc-200 rounded-lg shadow-lg shadow-zinc-100 z-20 min-w-[220px] py-1 max-h-60 overflow-y-auto">
           {amenities.map((a) => (
             <button
               key={a.id}
               onClick={() => toggle(a.id)}
-              className={`w-full text-start px-4 py-2.5 text-sm hover:bg-stone-50 transition-colors flex items-center gap-2 ${selected.includes(a.id) ? "bg-amber-50" : ""}`}
+              className={`w-full text-start px-3 py-2 text-[13px] hover:bg-zinc-50 transition-colors flex items-center gap-2.5 ${selected.includes(a.id) ? "bg-zinc-50" : ""}`}
             >
-              <span className={`w-4 h-4 border flex items-center justify-center shrink-0 ${selected.includes(a.id) ? "bg-amber-700 border-amber-700 text-white" : "border-stone-300"}`}>
-                {selected.includes(a.id) && <span className="text-[10px]">✓</span>}
+              <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${selected.includes(a.id) ? "bg-zinc-900 border-zinc-900 text-white" : "border-zinc-300"}`}>
+                {selected.includes(a.id) && <Check className="w-2.5 h-2.5" />}
               </span>
-              {locale === "ar" ? a.nameAr : a.nameEn}
+              <span className={selected.includes(a.id) ? "text-zinc-900 font-medium" : "text-zinc-600"}>
+                {locale === "ar" ? a.nameAr : a.nameEn}
+              </span>
             </button>
           ))}
           {selected.length > 0 && (
             <button
               onClick={() => onChange([])}
-              className="w-full text-start px-4 py-2.5 text-xs text-red-500 hover:bg-red-50 border-t border-stone-100"
+              className="w-full text-start px-3 py-2 text-[11px] text-red-500 hover:bg-red-50 border-t border-zinc-100 font-medium"
             >
               {locale === "ar" ? "مسح الكل" : "Clear all"}
             </button>
