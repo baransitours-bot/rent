@@ -15,6 +15,15 @@ export async function generateMetadata({ params }: { params: Promise<{ tenantId:
     });
   }
 
+  // Get platform branding for siteName
+  const brandSettings = await prisma.systemSettings.findMany({
+    where: { key: { in: ["platformName", "platformNameEn"] } },
+  });
+  const brandMap: Record<string, string> = {};
+  for (const s of brandSettings) brandMap[s.key] = s.value;
+  const platformName = brandMap.platformName || "دارك";
+  const platformNameEn = brandMap.platformNameEn || "Darak";
+
   const name = user?.companyName || user?.name || "Agent";
   const title = `${name} - عقارات للإيجار | Properties for Rent`;
   const description = `تصفح العقارات المتاحة للإيجار من ${name}. شقق، منازل، محلات والمزيد. | Browse properties for rent from ${name}.`;
@@ -26,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tenantId:
       title,
       description,
       type: "website",
-      siteName: "دارك | Darak",
+      siteName: `${platformName} | ${platformNameEn}`,
       ...(user?.logo ? { images: [{ url: user.logo }] } : {}),
     },
     twitter: {

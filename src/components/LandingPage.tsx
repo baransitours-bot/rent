@@ -38,6 +38,15 @@ interface Agent {
   _count: { properties: number };
 }
 
+interface Branding {
+  name: string;
+  nameEn: string;
+  logo: string;
+  color: string;
+  description: string;
+  descriptionEn: string;
+}
+
 const TYPE_LABELS: Record<string, string> = {
   apartment: "شقة",
   house: "منزل",
@@ -52,16 +61,26 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [gaTrackingId, setGaTrackingId] = useState("");
+  const [brand, setBrand] = useState<Branding>({
+    name: "دارك",
+    nameEn: "Darak",
+    logo: "",
+    color: "#b45309",
+    description: "",
+    descriptionEn: "",
+  });
 
   useEffect(() => {
     Promise.all([
       fetch("/api/listing").then((r) => r.json()),
       fetch("/api/listing/agents").then((r) => r.json()),
+      fetch("/api/branding").then((r) => r.json()).catch(() => null),
     ])
-      .then(([listingData, agentsData]) => {
+      .then(([listingData, agentsData, brandingData]) => {
         setProperties(listingData.properties || []);
         setAgents(agentsData || []);
         if (listingData.gaTrackingId) setGaTrackingId(listingData.gaTrackingId);
+        if (brandingData) setBrand(brandingData);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -80,6 +99,8 @@ export default function LandingPage() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const c = brand.color; // shorthand for brand color
+
   return (
     <div dir="rtl" className="min-h-screen bg-stone-50 text-gray-900">
       {gaTrackingId && <Analytics gaTrackingId={gaTrackingId} page="landing" />}
@@ -87,11 +108,15 @@ export default function LandingPage() {
       <nav className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-amber-700 flex items-center justify-center">
-              <Home className="w-5 h-5 text-white" />
-            </div>
+            {brand.logo ? (
+              <img src={brand.logo} alt={brand.name} className="w-9 h-9 object-contain" />
+            ) : (
+              <div className="w-9 h-9 flex items-center justify-center" style={{ backgroundColor: c }}>
+                <Home className="w-5 h-5 text-white" />
+              </div>
+            )}
             <span className="text-lg font-bold tracking-tight text-gray-900">
-              دارك
+              {brand.name}
             </span>
           </div>
 
@@ -118,7 +143,8 @@ export default function LandingPage() {
 
           <Link
             href="/login"
-            className="px-5 py-2 bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition-colors"
+            className="px-5 py-2 text-white text-sm font-semibold transition-colors"
+            style={{ backgroundColor: c }}
           >
             تسجيل الدخول
           </Link>
@@ -133,12 +159,12 @@ export default function LandingPage() {
             <div className="max-w-2xl">
               <h1 className="text-4xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
                 ابحث عن
-                <span className="text-amber-400"> بيتك </span>
+                <span style={{ color: c }}> بيتك </span>
                 القادم
               </h1>
               <p className="mt-6 text-lg text-stone-300 leading-relaxed max-w-lg">
-                منصتك الموثوقة للبحث عن العقارات المتاحة للإيجار. تصفّح العقارات
-                وتواصل مباشرة مع الوكلاء المعتمدين.
+                {brand.description ||
+                  "منصتك الموثوقة للبحث عن العقارات المتاحة للإيجار. تصفّح العقارات وتواصل مباشرة مع الوكلاء المعتمدين."}
               </p>
 
               {/* Search Bar */}
@@ -155,7 +181,8 @@ export default function LandingPage() {
                 </div>
                 <Link
                   href="/listing"
-                  className="px-8 py-4 bg-amber-700 text-white font-semibold hover:bg-amber-800 transition-colors flex items-center gap-2 shrink-0"
+                  className="px-8 py-4 text-white font-semibold transition-colors flex items-center gap-2 shrink-0"
+                  style={{ backgroundColor: c }}
                 >
                   تصفّح الكل
                   <ArrowLeft className="w-4 h-4" />
@@ -193,8 +220,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-amber-50 flex items-center justify-center shrink-0">
-                <Search className="w-5 h-5 text-amber-700" />
+              <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ backgroundColor: c + "15" }}>
+                <Search className="w-5 h-5" style={{ color: c }} />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900">بحث سريع</h3>
@@ -204,8 +231,8 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-amber-50 flex items-center justify-center shrink-0">
-                <Shield className="w-5 h-5 text-amber-700" />
+              <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ backgroundColor: c + "15" }}>
+                <Shield className="w-5 h-5" style={{ color: c }} />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900">وكلاء موثوقون</h3>
@@ -215,8 +242,8 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-amber-50 flex items-center justify-center shrink-0">
-                <Phone className="w-5 h-5 text-amber-700" />
+              <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ backgroundColor: c + "15" }}>
+                <Phone className="w-5 h-5" style={{ color: c }} />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900">تواصل مباشر</h3>
@@ -243,7 +270,8 @@ export default function LandingPage() {
             </div>
             <Link
               href="/listing"
-              className="hidden md:flex items-center gap-2 text-sm font-semibold text-amber-700 hover:text-amber-800 transition-colors"
+              className="hidden md:flex items-center gap-2 text-sm font-semibold transition-colors"
+              style={{ color: c }}
             >
               عرض الكل
               <ArrowLeft className="w-4 h-4" />
@@ -252,7 +280,7 @@ export default function LandingPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="w-8 h-8 border-2 border-stone-300 border-t-amber-700 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-stone-300 rounded-full animate-spin" style={{ borderTopColor: c }} />
             </div>
           ) : filteredProperties.length === 0 ? (
             <div className="text-center py-16 bg-white border border-stone-200">
@@ -298,7 +326,7 @@ export default function LandingPage() {
                         )}
                       </p>
                       <div className="flex items-center justify-between pt-3 border-t border-stone-100">
-                        <span className="text-xs font-medium text-amber-700">
+                        <span className="text-xs font-medium" style={{ color: c }}>
                           {prop.user.companyName || prop.user.name}
                         </span>
                         {prop.amenities.length > 0 && (
@@ -353,7 +381,7 @@ export default function LandingPage() {
                   href={`/listing/${agent.slug || agent.id}`}
                   className="border border-stone-200 p-6 hover:shadow-md transition-all group bg-stone-50 hover:bg-white"
                 >
-                  <div className="w-14 h-14 bg-amber-700 flex items-center justify-center mb-4">
+                  <div className="w-14 h-14 flex items-center justify-center mb-4" style={{ backgroundColor: c }}>
                     <span className="text-xl font-bold text-white">
                       {(agent.companyName || agent.name || "?").charAt(0)}
                     </span>
@@ -370,7 +398,7 @@ export default function LandingPage() {
                     <span className="text-xs text-stone-500">
                       {agent._count.properties} عقار متاح
                     </span>
-                    <span className="text-xs font-semibold text-amber-700 group-hover:text-amber-800 flex items-center gap-1">
+                    <span className="text-xs font-semibold flex items-center gap-1" style={{ color: c }}>
                       عرض العقارات
                       <ArrowLeft className="w-3 h-3" />
                     </span>
@@ -390,13 +418,14 @@ export default function LandingPage() {
               هل أنت وكيل عقارات؟
             </h2>
             <p className="mt-4 text-stone-400 leading-relaxed">
-              انضم لمنصة دارك وأدِر عقاراتك بسهولة. نظام متكامل لإدارة
+              انضم لمنصة {brand.name} وأدِر عقاراتك بسهولة. نظام متكامل لإدارة
               العقارات، المستأجرين، المدفوعات، والمزيد.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/login"
-                className="px-8 py-3 bg-amber-700 text-white font-semibold hover:bg-amber-800 transition-colors"
+                className="px-8 py-3 text-white font-semibold transition-colors"
+                style={{ backgroundColor: c }}
               >
                 تسجيل الدخول
               </Link>
@@ -416,10 +445,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-700 flex items-center justify-center">
-                <Home className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-white">دارك</span>
+              {brand.logo ? (
+                <img src={brand.logo} alt={brand.name} className="w-8 h-8 object-contain" />
+              ) : (
+                <div className="w-8 h-8 flex items-center justify-center" style={{ backgroundColor: c }}>
+                  <Home className="w-4 h-4 text-white" />
+                </div>
+              )}
+              <span className="font-bold text-white">{brand.name}</span>
               <span className="text-sm text-stone-500">
                 · منصة إدارة العقارات
               </span>

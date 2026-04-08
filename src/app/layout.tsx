@@ -1,32 +1,57 @@
 import type { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: {
-    default: "دارك - إدارة العقارات | Darak Property Management",
-    template: "%s | دارك",
-  },
-  description: "منصة دارك لإدارة العقارات والإيجارات. أدر عقاراتك بسهولة واعرضها في السوق العام. | Darak - Multi-tenant rental property management platform.",
-  keywords: ["property management", "rental", "real estate", "إدارة عقارات", "إيجار", "عقارات", "دارك", "Darak"],
-  authors: [{ name: "Darak" }],
-  openGraph: {
-    type: "website",
-    locale: "ar_SA",
-    alternateLocale: "en_US",
-    siteName: "دارك | Darak",
-    title: "دارك - إدارة العقارات | Darak Property Management",
-    description: "منصة دارك لإدارة العقارات والإيجارات. | Darak property management platform.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "دارك | Darak",
-    description: "منصة دارك لإدارة العقارات والإيجارات.",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  let name = "دارك";
+  let nameEn = "Darak";
+  let desc = "";
+  let descEn = "";
+
+  try {
+    const settings = await prisma.systemSettings.findMany({
+      where: { key: { in: ["platformName", "platformNameEn", "platformDescription", "platformDescriptionEn"] } },
+    });
+    const map: Record<string, string> = {};
+    for (const s of settings) map[s.key] = s.value;
+    name = map.platformName || name;
+    nameEn = map.platformNameEn || nameEn;
+    desc = map.platformDescription || "";
+    descEn = map.platformDescriptionEn || "";
+  } catch {
+    // DB not ready yet, use defaults
+  }
+
+  const fullDesc = desc || `منصة ${name} لإدارة العقارات والإيجارات. أدر عقاراتك بسهولة واعرضها في السوق العام.`;
+  const fullDescEn = descEn || `${nameEn} - Multi-tenant rental property management platform.`;
+
+  return {
+    title: {
+      default: `${name} - إدارة العقارات | ${nameEn} Property Management`,
+      template: `%s | ${name}`,
+    },
+    description: `${fullDesc} | ${fullDescEn}`,
+    keywords: ["property management", "rental", "real estate", "إدارة عقارات", "إيجار", "عقارات", name, nameEn],
+    authors: [{ name: nameEn }],
+    openGraph: {
+      type: "website",
+      locale: "ar_SA",
+      alternateLocale: "en_US",
+      siteName: `${name} | ${nameEn}`,
+      title: `${name} - إدارة العقارات | ${nameEn} Property Management`,
+      description: `${fullDesc} | ${fullDescEn}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${name} | ${nameEn}`,
+      description: fullDesc,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default function RootLayout({
   children,

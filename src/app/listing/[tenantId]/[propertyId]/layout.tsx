@@ -73,7 +73,7 @@ export async function generateMetadata({
       title,
       description,
       type: "website",
-      siteName: "دارك | Darak",
+      siteName: "Darak",
       ...(ogImage && !ogImage.startsWith("data:") ? { images: [{ url: ogImage }] } : {}),
     },
     twitter: {

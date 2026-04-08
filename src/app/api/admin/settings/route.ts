@@ -18,6 +18,12 @@ export async function GET() {
   return NextResponse.json({
     gaTrackingId: map.gaTrackingId || "",
     defaultMaxImages: parseInt(map.defaultMaxImages || "10"),
+    platformName: map.platformName || "دارك",
+    platformNameEn: map.platformNameEn || "Darak",
+    platformLogo: map.platformLogo || "",
+    platformColor: map.platformColor || "#b45309",
+    platformDescription: map.platformDescription || "",
+    platformDescriptionEn: map.platformDescriptionEn || "",
   });
 }
 
@@ -35,6 +41,12 @@ export async function PUT(request: NextRequest) {
   }
   if (body.defaultMaxImages !== undefined) {
     updates.push({ key: "defaultMaxImages", value: String(body.defaultMaxImages) });
+  }
+  const brandingKeys = ["platformName", "platformNameEn", "platformLogo", "platformColor", "platformDescription", "platformDescriptionEn"];
+  for (const k of brandingKeys) {
+    if (body[k] !== undefined) {
+      updates.push({ key: k, value: body[k] });
+    }
   }
 
   for (const { key, value } of updates) {

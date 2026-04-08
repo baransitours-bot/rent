@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { t, type Locale } from "@/i18n/translations";
-import { CheckCircle, Settings2, BarChart3, Image } from "lucide-react";
+import { CheckCircle, BarChart3, Image, Upload, X, Palette, Globe } from "lucide-react";
 
 export default function AdminSettingsPage() {
   const { data: session } = useSession();
@@ -12,6 +12,15 @@ export default function AdminSettingsPage() {
 
   const [gaTrackingId, setGaTrackingId] = useState("");
   const [defaultMaxImages, setDefaultMaxImages] = useState(10);
+
+  // SaaS Branding
+  const [platformName, setPlatformName] = useState("دارك");
+  const [platformNameEn, setPlatformNameEn] = useState("Darak");
+  const [platformLogo, setPlatformLogo] = useState("");
+  const [platformColor, setPlatformColor] = useState("#b45309");
+  const [platformDescription, setPlatformDescription] = useState("");
+  const [platformDescriptionEn, setPlatformDescriptionEn] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -22,6 +31,12 @@ export default function AdminSettingsPage() {
       .then((data) => {
         setGaTrackingId(data.gaTrackingId || "");
         setDefaultMaxImages(data.defaultMaxImages || 10);
+        setPlatformName(data.platformName || "دارك");
+        setPlatformNameEn(data.platformNameEn || "Darak");
+        setPlatformLogo(data.platformLogo || "");
+        setPlatformColor(data.platformColor || "#b45309");
+        setPlatformDescription(data.platformDescription || "");
+        setPlatformDescriptionEn(data.platformDescriptionEn || "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -35,7 +50,16 @@ export default function AdminSettingsPage() {
     await fetch("/api/admin/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gaTrackingId, defaultMaxImages }),
+      body: JSON.stringify({
+        gaTrackingId,
+        defaultMaxImages,
+        platformName,
+        platformNameEn,
+        platformLogo,
+        platformColor,
+        platformDescription,
+        platformDescriptionEn,
+      }),
     });
 
     setSaving(false);
@@ -51,12 +75,179 @@ export default function AdminSettingsPage() {
     );
   }
 
+  const txt = locale === "ar" ? {
+    saasBranding: "هوية المنصة",
+    saasBrandingHint: "تحكم في اسم وشعار ولون المنصة الذي يظهر في جميع الصفحات العامة وصفحة الدخول",
+    platformNameAr: "اسم المنصة (عربي)",
+    platformNameEn: "اسم المنصة (إنجليزي)",
+    platformLogo: "شعار المنصة",
+    platformLogoHint: "ارفع شعار المنصة (يظهر في الهيدر والفوتر والصفحة الرئيسية)",
+    platformColor: "اللون الرئيسي للمنصة",
+    platformColorHint: "يستخدم في الأزرار والعناوين والعلامات البارزة",
+    platformDescAr: "وصف المنصة (عربي)",
+    platformDescEn: "وصف المنصة (إنجليزي)",
+    platformDescHint: "وصف قصير يظهر في نتائج البحث (SEO)",
+    preview: "معاينة",
+  } : {
+    saasBranding: "Platform Identity",
+    saasBrandingHint: "Control the platform name, logo and color shown across all public pages and login",
+    platformNameAr: "Platform Name (Arabic)",
+    platformNameEn: "Platform Name (English)",
+    platformLogo: "Platform Logo",
+    platformLogoHint: "Upload the platform logo (displayed in header, footer, and landing page)",
+    platformColor: "Platform Primary Color",
+    platformColorHint: "Used for buttons, headings, and accent elements",
+    platformDescAr: "Platform Description (Arabic)",
+    platformDescEn: "Platform Description (English)",
+    platformDescHint: "Short description for search engine results (SEO)",
+    preview: "Preview",
+  };
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t(locale, "systemSettings")}</h1>
 
       <div className="max-w-lg space-y-6">
         <form onSubmit={handleSave} className="space-y-6">
+
+          {/* SaaS Platform Branding */}
+          <div className="bg-white rounded-xl border p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                <Globe className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">{txt.saasBranding}</h3>
+                <p className="text-xs text-gray-500">{txt.saasBrandingHint}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Platform Names */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{txt.platformNameAr}</label>
+                  <input
+                    type="text"
+                    value={platformName}
+                    onChange={(e) => setPlatformName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{txt.platformNameEn}</label>
+                  <input
+                    type="text"
+                    value={platformNameEn}
+                    onChange={(e) => setPlatformNameEn(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+
+              {/* Logo */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{txt.platformLogo}</label>
+                <p className="text-xs text-gray-400 mb-2">{txt.platformLogoHint}</p>
+                <div className="flex items-center gap-4">
+                  {platformLogo ? (
+                    <div className="relative">
+                      <img src={platformLogo} alt="Logo" className="w-14 h-14 object-contain border border-gray-200 rounded-lg bg-white p-1" />
+                      <button
+                        type="button"
+                        onClick={() => setPlatformLogo("")}
+                        className="absolute -top-2 -end-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-14 h-14 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                  )}
+                  <label className="cursor-pointer px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                    {platformLogo ? t(locale, "edit") : t(locale, "uploadImages")}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => setPlatformLogo(reader.result as string);
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Color */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{txt.platformColor}</label>
+                <p className="text-xs text-gray-400 mb-2">{txt.platformColorHint}</p>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={platformColor}
+                    onChange={(e) => setPlatformColor(e.target.value)}
+                    className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer p-0.5"
+                  />
+                  <input
+                    type="text"
+                    value={platformColor}
+                    onChange={(e) => setPlatformColor(e.target.value)}
+                    className="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none"
+                    dir="ltr"
+                  />
+                  <div className="flex-1 h-10 rounded-lg" style={{ backgroundColor: platformColor }} />
+                </div>
+              </div>
+
+              {/* Descriptions */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{txt.platformDescAr}</label>
+                <p className="text-xs text-gray-400 mb-1">{txt.platformDescHint}</p>
+                <textarea
+                  value={platformDescription}
+                  onChange={(e) => setPlatformDescription(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{txt.platformDescEn}</label>
+                <textarea
+                  value={platformDescriptionEn}
+                  onChange={(e) => setPlatformDescriptionEn(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none"
+                  dir="ltr"
+                />
+              </div>
+
+              {/* Preview */}
+              <div className="border-t pt-4">
+                <p className="text-xs text-gray-500 mb-3 font-medium">{txt.preview}</p>
+                <div className="flex items-center gap-3 p-4 bg-stone-900 rounded-lg">
+                  {platformLogo ? (
+                    <img src={platformLogo} alt="" className="w-9 h-9 object-contain" />
+                  ) : (
+                    <div className="w-9 h-9 flex items-center justify-center rounded" style={{ backgroundColor: platformColor }}>
+                      <span className="text-white font-bold text-sm">{(platformName || "D").charAt(0)}</span>
+                    </div>
+                  )}
+                  <span className="font-bold text-white">{platformName}</span>
+                  <span className="text-stone-400 text-sm">|</span>
+                  <span className="text-stone-400 text-sm">{platformNameEn}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Google Analytics */}
           <div className="bg-white rounded-xl border p-6">
             <div className="flex items-center gap-3 mb-4">

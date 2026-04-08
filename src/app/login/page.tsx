@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Home, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -12,6 +12,14 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const [brand, setBrand] = useState({ name: "دارك", nameEn: "Darak", logo: "", color: "#b45309" });
+
+  useEffect(() => {
+    fetch("/api/branding").then((r) => r.json()).then((data) => {
+      if (data) setBrand({ name: data.name || "دارك", nameEn: data.nameEn || "Darak", logo: data.logo || "", color: data.color || "#b45309" });
+    }).catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,10 +61,14 @@ export default function LoginPage() {
       <header className="bg-white border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-amber-700 flex items-center justify-center">
-              <Home className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-lg font-bold text-gray-900">دارك</span>
+            {brand.logo ? (
+              <img src={brand.logo} alt={brand.name} className="w-9 h-9 object-contain" />
+            ) : (
+              <div className="w-9 h-9 flex items-center justify-center" style={{ backgroundColor: brand.color }}>
+                <Home className="w-5 h-5 text-white" />
+              </div>
+            )}
+            <span className="text-lg font-bold text-gray-900">{brand.name}</span>
           </Link>
           <Link href="/listing" className="text-sm text-stone-500 hover:text-stone-700 font-medium">
             تصفّح السوق
@@ -89,7 +101,8 @@ export default function LoginPage() {
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 text-gray-900 placeholder-stone-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 text-gray-900 placeholder-stone-400 outline-none transition-all"
+                  style={{ "--tw-ring-color": brand.color } as any}
                   placeholder="email@example.com / +970599123456"
                   dir="ltr"
                 />
@@ -104,7 +117,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 text-gray-900 placeholder-stone-400 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 text-gray-900 placeholder-stone-400 outline-none transition-all"
                   placeholder="••••••••"
                   dir="ltr"
                 />
@@ -113,7 +126,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-amber-700 text-white py-3 font-semibold hover:bg-amber-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full text-white py-3 font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: brand.color }}
               >
                 {loading ? (
                   <>
