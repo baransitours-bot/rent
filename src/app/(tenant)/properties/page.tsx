@@ -17,16 +17,6 @@ interface Property {
   createdAt: string;
 }
 
-const statusColors: Record<string, string> = {
-  available: "bg-green-100 text-green-700",
-  rented: "bg-amber-100 text-amber-700",
-};
-
-const ownershipColors: Record<string, string> = {
-  owned: "bg-blue-100 text-blue-700",
-  managed: "bg-purple-100 text-purple-700",
-};
-
 export default function PropertiesPage() {
   const { data: session } = useSession();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -63,108 +53,151 @@ export default function PropertiesPage() {
       p.address.toLowerCase().includes(search.toLowerCase())
   );
 
-  const typeLabel = (type: string) => {
-    const key = type as any;
-    return t(locale, key) || type;
-  };
+  const typeLabel = (type: string) => t(locale, type as any) || type;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t(locale, "properties")}</h1>
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-lg font-semibold text-zinc-900">{t(locale, "properties")}</h1>
         {!isPaused && (
           <Link
             href="/properties/new"
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
+            className="flex items-center gap-2 bg-zinc-900 text-white px-3.5 py-2 rounded-lg font-medium hover:bg-zinc-800 transition-colors text-[13px]"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             {t(locale, "addProperty")}
           </Link>
         )}
       </div>
 
-      <div className="bg-white rounded-xl border">
-        <div className="p-4 border-b">
-          <div className="relative max-w-sm">
-            <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-gray-400" />
+      <div className="card overflow-hidden">
+        <div className="p-3 border-b border-zinc-100">
+          <div className="relative max-w-xs">
+            <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-3.5 h-3.5 text-zinc-400" />
             <input
               type="text"
               placeholder={t(locale, "search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full ps-10 pe-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="w-full ps-9 pe-3 py-2 border border-zinc-200 rounded-lg text-[13px] outline-none bg-zinc-50 placeholder-zinc-400 transition-all"
             />
           </div>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
+            <div className="w-5 h-5 border-2 border-zinc-200 border-t-zinc-600 rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p>{t(locale, "noProperties")}</p>
+          <div className="text-center py-12">
+            <Building2 className="w-10 h-10 mx-auto mb-2 text-zinc-200" />
+            <p className="text-zinc-400 text-[13px]">{t(locale, "noProperties")}</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "propertyTitle")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "propertyType")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "propertyAddress")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "ownershipType")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "status")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "dateAdded")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((p) => (
-                  <tr key={p.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3 font-medium">{p.title}</td>
-                    <td className="p-3">{typeLabel(p.type)}</td>
-                    <td className="p-3 text-gray-500">{p.address}</td>
-                    <td className="p-3">
-                      <span className={clsx("px-2 py-1 rounded-full text-xs font-medium", ownershipColors[p.ownershipType])}>
-                        {t(locale, p.ownershipType as any)}
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <span className={clsx("px-2 py-1 rounded-full text-xs font-medium", statusColors[p.status])}>
-                        {t(locale, p.status as any)}
-                      </span>
-                    </td>
-                    <td className="p-3 text-gray-500">
-                      {new Date(p.createdAt).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US")}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <Link href={`/properties/${p.id}`} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded">
-                          <Eye className="w-4 h-4" />
-                        </Link>
-                        {!isPaused && (
-                          <Link href={`/properties/${p.id}/edit`} className="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded">
-                            <Pencil className="w-4 h-4" />
-                          </Link>
-                        )}
-                        {!isPaused && (
-                          <button
-                            onClick={() => handleDelete(p.id)}
-                            disabled={deleting === p.id}
-                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-zinc-100 bg-zinc-50/50">
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "propertyTitle")}</th>
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "propertyType")}</th>
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "ownershipType")}</th>
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "status")}</th>
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "actions")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((p) => (
+                    <tr key={p.id} className="border-b border-zinc-50 hover:bg-zinc-50/50">
+                      <td className="p-3">
+                        <div className="font-medium text-zinc-900">{p.title}</div>
+                        <div className="text-[11px] text-zinc-400 mt-0.5">{p.address}</div>
+                      </td>
+                      <td className="p-3 text-zinc-500">{typeLabel(p.type)}</td>
+                      <td className="p-3">
+                        <span className={clsx("px-2 py-0.5 rounded text-[11px] font-medium",
+                          p.ownershipType === "owned" ? "bg-blue-50 text-blue-600" : "bg-violet-50 text-violet-600"
+                        )}>
+                          {t(locale, p.ownershipType as any)}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <span className={clsx("px-2 py-0.5 rounded text-[11px] font-medium",
+                          p.status === "available" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                        )}>
+                          {t(locale, p.status as any)}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1">
+                          <Link href={`/properties/${p.id}`} className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg">
+                            <Eye className="w-3.5 h-3.5" />
+                          </Link>
+                          {!isPaused && (
+                            <Link href={`/properties/${p.id}/edit`} className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Link>
+                          )}
+                          {!isPaused && (
+                            <button
+                              onClick={() => handleDelete(p.id)}
+                              disabled={deleting === p.id}
+                              className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-zinc-50">
+              {filtered.map((p) => (
+                <div key={p.id} className="p-3.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-[13px] text-zinc-900 truncate">{p.title}</p>
+                      <p className="text-[11px] text-zinc-400 mt-0.5 truncate">{p.address}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Link href={`/properties/${p.id}`} className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-lg">
+                        <Eye className="w-3.5 h-3.5" />
+                      </Link>
+                      {!isPaused && (
+                        <Link href={`/properties/${p.id}/edit`} className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-lg">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Link>
+                      )}
+                      {!isPaused && (
+                        <button onClick={() => handleDelete(p.id)} className="p-1.5 text-zinc-400 hover:text-red-600 rounded-lg">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className={clsx("px-2 py-0.5 rounded text-[10px] font-medium",
+                      p.status === "available" ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                    )}>
+                      {t(locale, p.status as any)}
+                    </span>
+                    <span className={clsx("px-2 py-0.5 rounded text-[10px] font-medium",
+                      p.ownershipType === "owned" ? "bg-blue-50 text-blue-600" : "bg-violet-50 text-violet-600"
+                    )}>
+                      {t(locale, p.ownershipType as any)}
+                    </span>
+                    <span className="text-[10px] text-zinc-400">{typeLabel(p.type)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

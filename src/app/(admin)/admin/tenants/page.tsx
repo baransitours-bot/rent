@@ -7,27 +7,16 @@ import { Plus, Search, Users, Eye, Pencil, KeyRound, Play, Pause, Ban, Trash2, X
 import clsx from "clsx";
 
 interface Tenant {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  companyName: string;
-  currency: string;
-  locale: string;
-  subscriptionStatus: string;
-  subscriptionStartDate: string | null;
-  subscriptionExpiryDate: string | null;
-  lastLoginAt: string | null;
-  createdAt: string;
-  _count?: { properties: number; };
-  activeRentalsCount?: number;
+  id: string; name: string; email: string; phone: string; companyName: string; currency: string; locale: string;
+  subscriptionStatus: string; subscriptionStartDate: string | null; subscriptionExpiryDate: string | null;
+  lastLoginAt: string | null; createdAt: string; _count?: { properties: number }; activeRentalsCount?: number;
 }
 
-const statusColors: Record<string, string> = {
-  active: "bg-green-100 text-green-700",
-  paused: "bg-amber-100 text-amber-700",
-  suspended: "bg-red-100 text-red-700",
-  expired: "bg-gray-100 text-gray-700",
+const statusBadge: Record<string, string> = {
+  active: "bg-emerald-50 text-emerald-600",
+  paused: "bg-amber-50 text-amber-600",
+  suspended: "bg-red-50 text-red-600",
+  expired: "bg-zinc-100 text-zinc-500",
 };
 
 export default function TenantsPage() {
@@ -35,7 +24,6 @@ export default function TenantsPage() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -46,332 +34,183 @@ export default function TenantsPage() {
   const user = session?.user as any;
   const locale = (user?.locale || "ar") as Locale;
 
-  const [form, setForm] = useState({
-    name: "", email: "", phone: "", companyName: "", password: "",
-    currency: "USD", locale: "ar",
-    subscriptionStartDate: "", subscriptionExpiryDate: "",
-    maxImages: 10,
-  });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", companyName: "", password: "", currency: "USD", locale: "ar", subscriptionStartDate: "", subscriptionExpiryDate: "", maxImages: 10 });
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const load = () => {
-    fetch("/api/admin/tenants")
-      .then((r) => r.json())
-      .then((data) => { setTenants(data); setLoading(false); });
-  };
-
+  const load = () => { fetch("/api/admin/tenants").then((r) => r.json()).then((data) => { setTenants(data); setLoading(false); }); };
   useEffect(() => { load(); }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    await fetch("/api/admin/tenants", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    setSaving(false);
-    setShowCreateModal(false);
-    load();
-  };
+  const handleCreate = async (e: React.FormEvent) => { e.preventDefault(); setSaving(true); await fetch("/api/admin/tenants", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) }); setSaving(false); setShowCreateModal(false); load(); };
 
-  const handleView = async (tenant: Tenant) => {
-    const res = await fetch(`/api/admin/tenants/${tenant.id}`);
-    const data = await res.json();
-    setTenantDetail(data);
-    setShowViewModal(true);
-  };
+  const handleView = async (tenant: Tenant) => { const res = await fetch(`/api/admin/tenants/${tenant.id}`); setTenantDetail(await res.json()); setShowViewModal(true); };
 
   const handleEditOpen = (tenant: Tenant) => {
     setSelectedTenant(tenant);
-    setForm({
-      name: tenant.name,
-      email: tenant.email,
-      phone: tenant.phone,
-      companyName: tenant.companyName,
-      password: "",
-      currency: tenant.currency,
-      locale: tenant.locale,
+    setForm({ name: tenant.name, email: tenant.email, phone: tenant.phone, companyName: tenant.companyName, password: "", currency: tenant.currency, locale: tenant.locale,
       subscriptionStartDate: tenant.subscriptionStartDate ? new Date(tenant.subscriptionStartDate).toISOString().split("T")[0] : "",
       subscriptionExpiryDate: tenant.subscriptionExpiryDate ? new Date(tenant.subscriptionExpiryDate).toISOString().split("T")[0] : "",
-      maxImages: (tenant as any).maxImages || 10,
-    });
+      maxImages: (tenant as any).maxImages || 10 });
     setShowEditModal(true);
   };
 
   const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTenant) return;
-    setSaving(true);
-    await fetch(`/api/admin/tenants/${selectedTenant.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        companyName: form.companyName,
-        currency: form.currency,
-        locale: form.locale,
-        subscriptionStartDate: form.subscriptionStartDate || null,
-        subscriptionExpiryDate: form.subscriptionExpiryDate || null,
-        maxImages: form.maxImages,
-      }),
-    });
-    setSaving(false);
-    setShowEditModal(false);
-    load();
+    e.preventDefault(); if (!selectedTenant) return; setSaving(true);
+    await fetch(`/api/admin/tenants/${selectedTenant.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, companyName: form.companyName, currency: form.currency, locale: form.locale, subscriptionStartDate: form.subscriptionStartDate || null, subscriptionExpiryDate: form.subscriptionExpiryDate || null, maxImages: form.maxImages }) });
+    setSaving(false); setShowEditModal(false); load();
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTenant) return;
-    setSaving(true);
-    await fetch(`/api/admin/tenants/${selectedTenant.id}/password`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: newPassword }),
-    });
-    setSaving(false);
-    setShowPasswordModal(false);
-    setNewPassword("");
-  };
+  const handleChangePassword = async (e: React.FormEvent) => { e.preventDefault(); if (!selectedTenant) return; setSaving(true); await fetch(`/api/admin/tenants/${selectedTenant.id}/password`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: newPassword }) }); setSaving(false); setShowPasswordModal(false); setNewPassword(""); };
+  const handleStatusChange = async (id: string, status: string) => { await fetch(`/api/admin/tenants/${id}/status`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); load(); };
+  const handleDelete = async (id: string) => { if (!confirm(t(locale, "deleteTenantConfirm"))) return; await fetch(`/api/admin/tenants/${id}`, { method: "DELETE" }); load(); };
 
-  const handleStatusChange = async (id: string, status: string) => {
-    await fetch(`/api/admin/tenants/${id}/status`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    load();
-  };
+  const filtered = tenants.filter((tn) => tn.name.toLowerCase().includes(search.toLowerCase()) || tn.email.toLowerCase().includes(search.toLowerCase()) || tn.companyName.toLowerCase().includes(search.toLowerCase()));
+  const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US") : "-";
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t(locale, "deleteTenantConfirm"))) return;
-    await fetch(`/api/admin/tenants/${id}`, { method: "DELETE" });
-    load();
-  };
-
-  const filtered = tenants.filter(
-    (tn) =>
-      tn.name.toLowerCase().includes(search.toLowerCase()) ||
-      tn.email.toLowerCase().includes(search.toLowerCase()) ||
-      tn.companyName.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const fmtDate = (d: string | null) => {
-    if (!d) return "-";
-    return new Date(d).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US");
-  };
+  const inputCls = "w-full px-3 py-2.5 border border-zinc-200 rounded-lg text-[13px] outline-none bg-zinc-50";
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t(locale, "tenantManagement")}</h1>
-        <button
-          onClick={() => {
-            setForm({ name: "", email: "", phone: "", companyName: "", password: "", currency: "USD", locale: "ar", subscriptionStartDate: new Date().toISOString().split("T")[0], subscriptionExpiryDate: "", maxImages: 10 });
-            setShowCreateModal(true);
-          }}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          {t(locale, "createTenant")}
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-lg font-semibold text-zinc-900">{t(locale, "tenantManagement")}</h1>
+        <button onClick={() => { setForm({ name: "", email: "", phone: "", companyName: "", password: "", currency: "USD", locale: "ar", subscriptionStartDate: new Date().toISOString().split("T")[0], subscriptionExpiryDate: "", maxImages: 10 }); setShowCreateModal(true); }}
+          className="flex items-center gap-2 bg-zinc-900 text-white px-3.5 py-2 rounded-lg font-medium hover:bg-zinc-800 transition-colors text-[13px]">
+          <Plus className="w-3.5 h-3.5" /> {t(locale, "createTenant")}
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border">
-        <div className="p-4 border-b">
-          <div className="relative max-w-sm">
-            <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t(locale, "search")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full ps-10 pe-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            />
+      <div className="card overflow-hidden">
+        <div className="p-3 border-b border-zinc-100">
+          <div className="relative max-w-xs">
+            <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-3.5 h-3.5 text-zinc-400" />
+            <input type="text" placeholder={t(locale, "search")} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full ps-9 pe-3 py-2 border border-zinc-200 rounded-lg text-[13px] outline-none bg-zinc-50 placeholder-zinc-400" />
           </div>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
-          </div>
+          <div className="flex items-center justify-center py-12"><div className="w-5 h-5 border-2 border-zinc-200 border-t-zinc-600 rounded-full animate-spin" /></div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p>{t(locale, "noData")}</p>
-          </div>
+          <div className="text-center py-12"><Users className="w-10 h-10 mx-auto mb-2 text-zinc-200" /><p className="text-zinc-400 text-[13px]">{t(locale, "noData")}</p></div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "name")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "email")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "companyName")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "subscriptionStatus")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "subscriptionExpiry")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "lastLogin")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "createdAt")}</th>
-                  <th className="text-start p-3 font-medium text-gray-600">{t(locale, "actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((tn) => (
-                  <tr key={tn.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3 font-medium">{tn.name}</td>
-                    <td className="p-3 text-gray-500">{tn.email}</td>
-                    <td className="p-3 text-gray-500">{tn.companyName || "-"}</td>
-                    <td className="p-3">
-                      <span className={clsx("px-2 py-1 rounded-full text-xs font-medium", statusColors[tn.subscriptionStatus])}>
-                        {t(locale, tn.subscriptionStatus as any)}
-                      </span>
-                    </td>
-                    <td className="p-3 text-gray-500">{fmtDate(tn.subscriptionExpiryDate)}</td>
-                    <td className="p-3 text-gray-500">{tn.lastLoginAt ? fmtDate(tn.lastLoginAt) : t(locale, "never")}</td>
-                    <td className="p-3 text-gray-500">{fmtDate(tn.createdAt)}</td>
-                    <td className="p-3">
-                      <div className="flex items-center gap-1 flex-wrap">
-                        <button onClick={() => handleView(tn)} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded" title={t(locale, "viewProfile")}>
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleEditOpen(tn)} className="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded" title={t(locale, "edit")}>
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setSelectedTenant(tn); setNewPassword(""); setShowPasswordModal(true); }} className="p-1.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded" title={t(locale, "changePassword")}>
-                          <KeyRound className="w-4 h-4" />
-                        </button>
-                        {tn.subscriptionStatus !== "active" && (
-                          <button onClick={() => handleStatusChange(tn.id, "active")} className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded" title={t(locale, "activate")}>
-                            <Play className="w-4 h-4" />
-                          </button>
-                        )}
-                        {tn.subscriptionStatus !== "paused" && (
-                          <button onClick={() => handleStatusChange(tn.id, "paused")} className="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded" title={t(locale, "pause")}>
-                            <Pause className="w-4 h-4" />
-                          </button>
-                        )}
-                        {tn.subscriptionStatus !== "suspended" && (
-                          <button onClick={() => handleStatusChange(tn.id, "suspended")} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded" title={t(locale, "suspend")}>
-                            <Ban className="w-4 h-4" />
-                          </button>
-                        )}
-                        <button onClick={() => handleDelete(tn.id)} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded" title={t(locale, "delete")}>
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            {/* Desktop */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-zinc-100 bg-zinc-50/50">
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "name")}</th>
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "email")}</th>
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "subscriptionStatus")}</th>
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "subscriptionExpiry")}</th>
+                    <th className="text-start p-3 font-medium text-zinc-400 text-[11px] uppercase tracking-wider">{t(locale, "actions")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((tn) => (
+                    <tr key={tn.id} className="border-b border-zinc-50 hover:bg-zinc-50/50">
+                      <td className="p-3">
+                        <div className="font-medium text-zinc-900">{tn.name}</div>
+                        {tn.companyName && <div className="text-[11px] text-zinc-400">{tn.companyName}</div>}
+                      </td>
+                      <td className="p-3 text-zinc-500">{tn.email}</td>
+                      <td className="p-3"><span className={clsx("px-2 py-0.5 rounded text-[11px] font-medium", statusBadge[tn.subscriptionStatus])}>{t(locale, tn.subscriptionStatus as any)}</span></td>
+                      <td className="p-3 text-zinc-400 text-[12px]">{fmtDate(tn.subscriptionExpiryDate)}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-0.5 flex-wrap">
+                          <button onClick={() => handleView(tn)} className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg" title={t(locale, "viewProfile")}><Eye className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => handleEditOpen(tn)} className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg" title={t(locale, "edit")}><Pencil className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => { setSelectedTenant(tn); setNewPassword(""); setShowPasswordModal(true); }} className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-lg" title={t(locale, "changePassword")}><KeyRound className="w-3.5 h-3.5" /></button>
+                          {tn.subscriptionStatus !== "active" && <button onClick={() => handleStatusChange(tn.id, "active")} className="p-1.5 text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg"><Play className="w-3.5 h-3.5" /></button>}
+                          {tn.subscriptionStatus !== "paused" && <button onClick={() => handleStatusChange(tn.id, "paused")} className="p-1.5 text-zinc-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg"><Pause className="w-3.5 h-3.5" /></button>}
+                          {tn.subscriptionStatus !== "suspended" && <button onClick={() => handleStatusChange(tn.id, "suspended")} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg"><Ban className="w-3.5 h-3.5" /></button>}
+                          <button onClick={() => handleDelete(tn.id)} className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile */}
+            <div className="lg:hidden divide-y divide-zinc-50">
+              {filtered.map((tn) => (
+                <div key={tn.id} className="p-3.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-[13px] text-zinc-900">{tn.name}</p>
+                      <p className="text-[11px] text-zinc-400 mt-0.5">{tn.email}</p>
+                    </div>
+                    <span className={clsx("px-2 py-0.5 rounded text-[10px] font-medium shrink-0", statusBadge[tn.subscriptionStatus])}>{t(locale, tn.subscriptionStatus as any)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 mt-2">
+                    <button onClick={() => handleView(tn)} className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-lg"><Eye className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => handleEditOpen(tn)} className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-lg"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => { setSelectedTenant(tn); setNewPassword(""); setShowPasswordModal(true); }} className="p-1.5 text-zinc-400 hover:text-zinc-700 rounded-lg"><KeyRound className="w-3.5 h-3.5" /></button>
+                    {tn.subscriptionStatus !== "active" && <button onClick={() => handleStatusChange(tn.id, "active")} className="p-1.5 text-zinc-400 hover:text-emerald-600 rounded-lg"><Play className="w-3.5 h-3.5" /></button>}
+                    <button onClick={() => handleDelete(tn.id)} className="p-1.5 text-zinc-400 hover:text-red-600 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Create Tenant Modal */}
+      {/* Create Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-5 max-h-[90vh] overflow-y-auto animate-slide-up">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">{t(locale, "createTenant")}</h2>
-              <button onClick={() => setShowCreateModal(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+              <h2 className="text-base font-semibold text-zinc-900">{t(locale, "createTenant")}</h2>
+              <button onClick={() => setShowCreateModal(false)} className="p-1 hover:bg-zinc-100 rounded-lg"><X className="w-4 h-4 text-zinc-400" /></button>
             </div>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "name")} *</label>
-                  <input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "email")} *</label>
-                  <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" dir="ltr" />
-                </div>
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "name")} *</label><input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></div>
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "email")} *</label><input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} dir="ltr" /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "phone")}</label>
-                  <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" dir="ltr" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "companyName")}</label>
-                  <input type="text" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "phone")}</label><input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} dir="ltr" /></div>
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "companyName")}</label><input type="text" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} className={inputCls} /></div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "password")} *</label>
-                <input type="password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" dir="ltr" />
+              <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "password")} *</label><input type="password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={inputCls} dir="ltr" /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "currency")}</label><select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className={inputCls}>{Object.entries(CURRENCIES).map(([code, symbol]) => (<option key={code} value={code}>{code} ({symbol})</option>))}</select></div>
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "language")}</label><select value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })} className={inputCls}><option value="ar">{t(locale, "arabic")}</option><option value="en">{t(locale, "english")}</option></select></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "currency")}</label>
-                  <select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    {Object.entries(CURRENCIES).map(([code, symbol]) => (
-                      <option key={code} value={code}>{code} ({symbol})</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "language")}</label>
-                  <select value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="ar">{t(locale, "arabic")}</option>
-                    <option value="en">{t(locale, "english")}</option>
-                  </select>
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "subscriptionStart")}</label><input type="date" value={form.subscriptionStartDate} onChange={(e) => setForm({ ...form, subscriptionStartDate: e.target.value })} className={inputCls} /></div>
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "subscriptionExpiry")}</label><input type="date" value={form.subscriptionExpiryDate} onChange={(e) => setForm({ ...form, subscriptionExpiryDate: e.target.value })} className={inputCls} /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "subscriptionStart")}</label>
-                  <input type="date" value={form.subscriptionStartDate} onChange={(e) => setForm({ ...form, subscriptionStartDate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "subscriptionExpiry")}</label>
-                  <input type="date" value={form.subscriptionExpiryDate} onChange={(e) => setForm({ ...form, subscriptionExpiryDate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-                </div>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={saving} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm">
-                  {saving ? "..." : t(locale, "create")}
-                </button>
-                <button type="button" onClick={() => setShowCreateModal(false)} className="px-6 py-2.5 rounded-lg font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm">
-                  {t(locale, "cancel")}
-                </button>
+              <div className="flex gap-2 pt-2">
+                <button type="submit" disabled={saving} className="bg-zinc-900 text-white px-5 py-2.5 rounded-lg text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-50">{saving ? "..." : t(locale, "create")}</button>
+                <button type="button" onClick={() => setShowCreateModal(false)} className="px-5 py-2.5 rounded-lg text-[13px] font-medium border border-zinc-200 text-zinc-600 hover:bg-zinc-50">{t(locale, "cancel")}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* View Profile Modal */}
+      {/* View Modal */}
       {showViewModal && tenantDetail && (
-        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6">
+        <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-5 animate-slide-up">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">{t(locale, "viewProfile")}</h2>
-              <button onClick={() => setShowViewModal(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+              <h2 className="text-base font-semibold text-zinc-900">{t(locale, "viewProfile")}</h2>
+              <button onClick={() => setShowViewModal(false)} className="p-1 hover:bg-zinc-100 rounded-lg"><X className="w-4 h-4 text-zinc-400" /></button>
             </div>
-            <div className="space-y-3 text-sm">
+            <div className="space-y-1.5 text-[13px]">
               {[
-                [t(locale, "name"), tenantDetail.name],
-                [t(locale, "email"), tenantDetail.email],
-                [t(locale, "phone"), tenantDetail.phone || "-"],
-                [t(locale, "companyName"), tenantDetail.companyName || "-"],
-                [t(locale, "currency"), tenantDetail.currency],
-                [t(locale, "language"), tenantDetail.locale === "ar" ? t(locale, "arabic") : t(locale, "english")],
-                [t(locale, "subscriptionStatus"), tenantDetail.subscriptionStatus],
-                [t(locale, "subscriptionStart"), fmtDate(tenantDetail.subscriptionStartDate)],
-                [t(locale, "subscriptionExpiry"), fmtDate(tenantDetail.subscriptionExpiryDate)],
+                [t(locale, "name"), tenantDetail.name], [t(locale, "email"), tenantDetail.email], [t(locale, "phone"), tenantDetail.phone || "-"],
+                [t(locale, "companyName"), tenantDetail.companyName || "-"], [t(locale, "subscriptionStatus"), tenantDetail.subscriptionStatus],
+                [t(locale, "subscriptionStart"), fmtDate(tenantDetail.subscriptionStartDate)], [t(locale, "subscriptionExpiry"), fmtDate(tenantDetail.subscriptionExpiryDate)],
                 [t(locale, "lastLogin"), tenantDetail.lastLoginAt ? fmtDate(tenantDetail.lastLoginAt) : t(locale, "never")],
-                [t(locale, "createdAt"), fmtDate(tenantDetail.createdAt)],
-                [t(locale, "totalProperties"), tenantDetail.totalProperties],
-                [t(locale, "activeRentals"), tenantDetail.activeRentals],
+                [t(locale, "totalProperties"), tenantDetail.totalProperties], [t(locale, "activeRentals"), tenantDetail.activeRentals],
               ].map(([label, value], i) => (
-                <div key={i} className="flex justify-between py-1.5 border-b border-gray-100">
-                  <span className="text-gray-500">{label}</span>
-                  <span className="font-medium">{value}</span>
+                <div key={i} className="flex justify-between py-2 border-b border-zinc-50">
+                  <span className="text-zinc-400">{label}</span>
+                  <span className="font-medium text-zinc-900">{value}</span>
                 </div>
               ))}
             </div>
@@ -381,91 +220,49 @@ export default function TenantsPage() {
 
       {/* Edit Modal */}
       {showEditModal && selectedTenant && (
-        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full p-5 max-h-[90vh] overflow-y-auto animate-slide-up">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">{t(locale, "editTenant")}</h2>
-              <button onClick={() => setShowEditModal(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+              <h2 className="text-base font-semibold text-zinc-900">{t(locale, "editTenant")}</h2>
+              <button onClick={() => setShowEditModal(false)} className="p-1 hover:bg-zinc-100 rounded-lg"><X className="w-4 h-4 text-zinc-400" /></button>
             </div>
-            <form onSubmit={handleEdit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "name")} *</label>
-                  <input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "email")} *</label>
-                  <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" dir="ltr" />
-                </div>
+            <form onSubmit={handleEdit} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "name")} *</label><input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} /></div>
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "email")} *</label><input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputCls} dir="ltr" /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "phone")}</label>
-                  <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" dir="ltr" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "companyName")}</label>
-                  <input type="text" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "phone")}</label><input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputCls} dir="ltr" /></div>
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "companyName")}</label><input type="text" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} className={inputCls} /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "currency")}</label>
-                  <select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none">
-                    {Object.entries(CURRENCIES).map(([code, symbol]) => (
-                      <option key={code} value={code}>{code} ({symbol})</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "language")}</label>
-                  <select value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none">
-                    <option value="ar">{t(locale, "arabic")}</option>
-                    <option value="en">{t(locale, "english")}</option>
-                  </select>
-                </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "subscriptionStart")}</label><input type="date" value={form.subscriptionStartDate} onChange={(e) => setForm({ ...form, subscriptionStartDate: e.target.value })} className={inputCls} /></div>
+                <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "subscriptionExpiry")}</label><input type="date" value={form.subscriptionExpiryDate} onChange={(e) => setForm({ ...form, subscriptionExpiryDate: e.target.value })} className={inputCls} /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "subscriptionStart")}</label>
-                  <input type="date" value={form.subscriptionStartDate} onChange={(e) => setForm({ ...form, subscriptionStartDate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "subscriptionExpiry")}</label>
-                  <input type="date" value={form.subscriptionExpiryDate} onChange={(e) => setForm({ ...form, subscriptionExpiryDate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "maxImages")}</label>
-                <p className="text-xs text-gray-400 mb-1">{t(locale, "maxImagesHint")}</p>
-                <input type="number" min="1" max="50" value={form.maxImages} onChange={(e) => setForm({ ...form, maxImages: parseInt(e.target.value) || 10 })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={saving} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 text-sm">{saving ? "..." : t(locale, "save")}</button>
-                <button type="button" onClick={() => setShowEditModal(false)} className="px-6 py-2.5 rounded-lg font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm">{t(locale, "cancel")}</button>
+              <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "maxImages")}</label><input type="number" min="1" max="50" value={form.maxImages} onChange={(e) => setForm({ ...form, maxImages: parseInt(e.target.value) || 10 })} className={inputCls} /></div>
+              <div className="flex gap-2 pt-2">
+                <button type="submit" disabled={saving} className="bg-zinc-900 text-white px-5 py-2.5 rounded-lg text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-50">{saving ? "..." : t(locale, "save")}</button>
+                <button type="button" onClick={() => setShowEditModal(false)} className="px-5 py-2.5 rounded-lg text-[13px] font-medium border border-zinc-200 text-zinc-600 hover:bg-zinc-50">{t(locale, "cancel")}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Change Password Modal */}
+      {/* Password Modal */}
       {showPasswordModal && selectedTenant && (
-        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-sm w-full p-6">
+        <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-sm w-full p-5 animate-slide-up">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">{t(locale, "changePassword")}</h2>
-              <button onClick={() => setShowPasswordModal(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5" /></button>
+              <h2 className="text-base font-semibold text-zinc-900">{t(locale, "changePassword")}</h2>
+              <button onClick={() => setShowPasswordModal(false)} className="p-1 hover:bg-zinc-100 rounded-lg"><X className="w-4 h-4 text-zinc-400" /></button>
             </div>
-            <p className="text-sm text-gray-500 mb-4">{selectedTenant.name} ({selectedTenant.email})</p>
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "newPassword")} *</label>
-                <input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" dir="ltr" />
-              </div>
-              <div className="flex gap-3">
-                <button type="submit" disabled={saving} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 text-sm">{saving ? "..." : t(locale, "save")}</button>
-                <button type="button" onClick={() => setShowPasswordModal(false)} className="px-6 py-2.5 rounded-lg font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm">{t(locale, "cancel")}</button>
+            <p className="text-[13px] text-zinc-400 mb-3">{selectedTenant.name} ({selectedTenant.email})</p>
+            <form onSubmit={handleChangePassword} className="space-y-3">
+              <div><label className="block text-[13px] font-medium text-zinc-700 mb-1">{t(locale, "newPassword")} *</label><input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={inputCls} dir="ltr" /></div>
+              <div className="flex gap-2">
+                <button type="submit" disabled={saving} className="bg-zinc-900 text-white px-5 py-2.5 rounded-lg text-[13px] font-medium hover:bg-zinc-800 disabled:opacity-50">{saving ? "..." : t(locale, "save")}</button>
+                <button type="button" onClick={() => setShowPasswordModal(false)} className="px-5 py-2.5 rounded-lg text-[13px] font-medium border border-zinc-200 text-zinc-600 hover:bg-zinc-50">{t(locale, "cancel")}</button>
               </div>
             </form>
           </div>
