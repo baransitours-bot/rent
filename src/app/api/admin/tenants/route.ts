@@ -26,6 +26,7 @@ export async function GET() {
       subscriptionExpiryDate: true,
       lastLoginAt: true,
       createdAt: true,
+      maxImages: true,
     },
   });
 

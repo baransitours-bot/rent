@@ -32,6 +32,7 @@ export async function GET(
       lastLoginAt: true,
       createdAt: true,
       updatedAt: true,
+      maxImages: true,
     },
   });
 
@@ -81,6 +82,7 @@ export async function PUT(
       subscriptionStatus: body.subscriptionStatus ?? existing.subscriptionStatus,
       subscriptionStartDate: body.subscriptionStartDate ? new Date(body.subscriptionStartDate) : existing.subscriptionStartDate,
       subscriptionExpiryDate: body.subscriptionExpiryDate ? new Date(body.subscriptionExpiryDate) : existing.subscriptionExpiryDate,
+      maxImages: body.maxImages !== undefined ? body.maxImages : existing.maxImages,
     },
   });
 

@@ -12,6 +12,7 @@ import {
   X,
   Shield,
   ListChecks,
+  Settings2,
 } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
@@ -48,6 +49,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
     { href: "/admin", label: t(locale, "adminDashboard"), icon: LayoutDashboard },
     { href: "/admin/tenants", label: t(locale, "tenantManagement"), icon: Users },
     { href: "/admin/amenities", label: t(locale, "amenityManagement"), icon: ListChecks },
+    { href: "/admin/settings", label: t(locale, "systemSettings"), icon: Settings2 },
   ];
 
   return (

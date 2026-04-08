@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Building2, MapPin, Search, X, Home, ArrowLeft, Users, LogIn } from "lucide-react";
 import Link from "next/link";
 import { Dropdown, AmenityDropdown } from "@/components/FilterDropdowns";
+import Analytics from "@/components/Analytics";
 
 interface Amenity {
   id: string;
@@ -55,6 +56,7 @@ export default function MarketplacePage() {
   const [allAmenities, setAllAmenities] = useState<Amenity[]>([]);
   const [tab, setTab] = useState<"properties" | "agents">("properties");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [gaTrackingId, setGaTrackingId] = useState("");
   const searchTimer = useRef<NodeJS.Timeout>(null);
 
   useEffect(() => {
@@ -83,6 +85,7 @@ export default function MarketplacePage() {
       .then((d) => {
         setProperties(d.properties || []);
         setCities(d.cities || []);
+        if (d.gaTrackingId) setGaTrackingId(d.gaTrackingId);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -151,6 +154,7 @@ export default function MarketplacePage() {
 
   return (
     <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-stone-50">
+      {gaTrackingId && <Analytics gaTrackingId={gaTrackingId} page="marketplace" />}
       {/* Header */}
       <header className="bg-white border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">

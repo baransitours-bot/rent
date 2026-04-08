@@ -27,10 +27,34 @@ model User {
   defaultFeeType         String?
   defaultFeeValue        Float?
   lastLoginAt            DateTime?
+  // Branding
+  logo                   String      @default("")
+  brandColor             String      @default("#b45309")
+  // Limits
+  maxImages              Int         @default(10)
   createdAt              DateTime    @default(now())
   updatedAt              DateTime    @updatedAt
   properties             Property[]
   inquiries              Inquiry[]
+  pageViews              PageView[]
+}
+
+model SystemSettings {
+  id    String @id @default("system")
+  key   String @unique
+  value String @default("")
+}
+
+model PageView {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String   @default("")
+  page       String
+  referrer   String   @default("")
+  userAgent  String   @default("")
+  ip         String   @default("")
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Amenity {

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Building2, MapPin, Phone, Share2, Home, LogIn, ArrowLeft, MessageCircle, Search, X } from "lucide-react";
 import Link from "next/link";
 import { Dropdown, AmenityDropdown } from "@/components/FilterDropdowns";
+import Analytics from "@/components/Analytics";
 
 interface Amenity {
   id: string;
@@ -35,6 +36,8 @@ interface TenantUser {
   whatsapp: string;
   locale: string;
   currency: string;
+  logo: string;
+  brandColor: string;
 }
 
 const TYPE_LABELS: Record<string, Record<string, string>> = {
@@ -44,7 +47,7 @@ const TYPE_LABELS: Record<string, Record<string, string>> = {
 
 export default function ListingPage() {
   const params = useParams();
-  const [data, setData] = useState<{ user: TenantUser; properties: Property[] } | null>(null);
+  const [data, setData] = useState<{ user: TenantUser; properties: Property[]; gaTrackingId?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("");
   const [amenityFilter, setAmenityFilter] = useState<string[]>([]);
@@ -184,9 +187,13 @@ export default function ListingPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-amber-700 flex items-center justify-center">
-                <Home className="w-5 h-5 text-white" />
-              </div>
+              {user.logo ? (
+                <img src={user.logo} alt="" className="w-9 h-9 object-contain" />
+              ) : (
+                <div className="w-9 h-9 flex items-center justify-center" style={{ backgroundColor: user.brandColor || "#b45309" }}>
+                  <Home className="w-5 h-5 text-white" />
+                </div>
+              )}
             </Link>
             <span className="text-stone-300">|</span>
             <span className="font-bold text-gray-900 text-sm">{user.companyName || user.name}</span>
@@ -207,11 +214,11 @@ export default function ListingPage() {
               {txt[locale].switchLang}
             </button>
             {isLoggedIn ? (
-              <Link href="/dashboard" className="px-4 py-2 bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition-colors">
+              <Link href="/dashboard" className="px-4 py-2 text-white text-sm font-semibold transition-colors" style={{ backgroundColor: user.brandColor || "#b45309" }}>
                 {txt[locale].backToDashboard}
               </Link>
             ) : (
-              <Link href="/login" className="px-4 py-2 bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition-colors flex items-center gap-2">
+              <Link href="/login" className="px-4 py-2 text-white text-sm font-semibold transition-colors flex items-center gap-2" style={{ backgroundColor: user.brandColor || "#b45309" }}>
                 <LogIn className="w-3.5 h-3.5" />
                 {txt[locale].login}
               </Link>
@@ -220,16 +227,27 @@ export default function ListingPage() {
         </div>
       </header>
 
+      {/* Analytics tracking */}
+      <Analytics
+        gaTrackingId={data.gaTrackingId}
+        userId={user.id}
+        page="profile"
+      />
+
       {/* ──── Agent Profile Hero ──── */}
       <section className="bg-stone-900">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12 lg:py-16">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            {/* Avatar */}
-            <div className="w-20 h-20 bg-amber-700 flex items-center justify-center shrink-0">
-              <span className="text-3xl font-bold text-white">
-                {(user.companyName || user.name || "?").charAt(0)}
-              </span>
-            </div>
+            {/* Avatar / Logo */}
+            {user.logo ? (
+              <img src={user.logo} alt={user.companyName || user.name} className="w-20 h-20 object-contain bg-white p-2 shrink-0" />
+            ) : (
+              <div className="w-20 h-20 flex items-center justify-center shrink-0" style={{ backgroundColor: user.brandColor || "#b45309" }}>
+                <span className="text-3xl font-bold text-white">
+                  {(user.companyName || user.name || "?").charAt(0)}
+                </span>
+              </div>
+            )}
 
             {/* Info */}
             <div className="flex-1">

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Building2, MapPin, Phone, ArrowRight, ArrowLeft, Check, Share2, MessageCircle, Send, X, ChevronLeft, ChevronRight, Home, LogIn } from "lucide-react";
 import Link from "next/link";
+import Analytics from "@/components/Analytics";
 
 interface Amenity {
   id: string;
@@ -33,6 +34,8 @@ interface TenantUser {
   whatsapp: string;
   locale: string;
   currency: string;
+  logo: string;
+  brandColor: string;
 }
 
 const TYPE_LABELS: Record<string, Record<string, string>> = {
@@ -108,7 +111,7 @@ function Lightbox({ images, startIndex, onClose, isRTL }: {
 
 export default function PropertyDetailPage() {
   const params = useParams();
-  const [data, setData] = useState<{ user: TenantUser; property: Property } | null>(null);
+  const [data, setData] = useState<{ user: TenantUser; property: Property; gaTrackingId?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [locale, setLocale] = useState<"ar" | "en">("ar");
   const [activeImage, setActiveImage] = useState(0);
@@ -263,6 +266,14 @@ export default function PropertyDetailPage() {
         <Lightbox images={images} startIndex={activeImage} onClose={() => setLightboxOpen(false)} isRTL={isRTL} />
       )}
 
+      {/* Analytics tracking */}
+      <Analytics
+        gaTrackingId={data.gaTrackingId}
+        userId={user.id}
+        propertyId={property.id}
+        page="property"
+      />
+
       <header className="bg-white border-b border-stone-200">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -271,9 +282,13 @@ export default function PropertyDetailPage() {
             </Link>
             <span className="text-stone-300">|</span>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-amber-700 flex items-center justify-center">
-                <span className="text-sm font-bold text-white">{(user.companyName || user.name || "?").charAt(0)}</span>
-              </div>
+              {user.logo ? (
+                <img src={user.logo} alt="" className="w-8 h-8 object-contain" />
+              ) : (
+                <div className="w-8 h-8 flex items-center justify-center" style={{ backgroundColor: user.brandColor || "#b45309" }}>
+                  <span className="text-sm font-bold text-white">{(user.companyName || user.name || "?").charAt(0)}</span>
+                </div>
+              )}
               <span className="font-bold text-gray-900 text-sm">{user.companyName || user.name}</span>
             </div>
           </div>
@@ -290,11 +305,11 @@ export default function PropertyDetailPage() {
               {txt[locale].switchLang}
             </button>
             {isLoggedIn ? (
-              <Link href="/dashboard" className="px-4 py-2 bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition-colors">
+              <Link href="/dashboard" className="px-4 py-2 text-white text-sm font-semibold transition-colors" style={{ backgroundColor: user.brandColor || "#b45309" }}>
                 {locale === "ar" ? "لوحة التحكم" : "Dashboard"}
               </Link>
             ) : (
-              <Link href="/login" className="px-4 py-2 bg-amber-700 text-white text-sm font-semibold hover:bg-amber-800 transition-colors flex items-center gap-2">
+              <Link href="/login" className="px-4 py-2 text-white text-sm font-semibold transition-colors flex items-center gap-2" style={{ backgroundColor: user.brandColor || "#b45309" }}>
                 <LogIn className="w-3.5 h-3.5" />
                 {locale === "ar" ? "دخول" : "Sign In"}
               </Link>

@@ -12,12 +12,12 @@ export async function GET(
   // Resolve tenant by slug first, then by ID
   let user = await prisma.user.findFirst({
     where: { slug: tenantId },
-    select: { id: true, slug: true, name: true, companyName: true, phone: true, whatsapp: true, locale: true, currency: true },
+    select: { id: true, slug: true, name: true, companyName: true, phone: true, whatsapp: true, locale: true, currency: true, logo: true, brandColor: true },
   });
   if (!user) {
     user = await prisma.user.findUnique({
       where: { id: tenantId },
-      select: { id: true, slug: true, name: true, companyName: true, phone: true, whatsapp: true, locale: true, currency: true },
+      select: { id: true, slug: true, name: true, companyName: true, phone: true, whatsapp: true, locale: true, currency: true, logo: true, brandColor: true },
     });
   }
 
@@ -70,5 +70,9 @@ export async function GET(
     }
   }
 
-  return NextResponse.json({ user, property });
+  // Get system GA tracking ID
+  const gaSetting = await prisma.systemSettings.findUnique({ where: { key: "gaTrackingId" } });
+  const gaTrackingId = gaSetting?.value || "";
+
+  return NextResponse.json({ user, property, gaTrackingId });
 }

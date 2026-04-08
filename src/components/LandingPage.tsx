@@ -14,6 +14,7 @@ import {
   Phone,
   ChevronDown,
 } from "lucide-react";
+import Analytics from "@/components/Analytics";
 
 interface Property {
   id: string;
@@ -50,6 +51,7 @@ export default function LandingPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [gaTrackingId, setGaTrackingId] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -59,6 +61,7 @@ export default function LandingPage() {
       .then(([listingData, agentsData]) => {
         setProperties(listingData.properties || []);
         setAgents(agentsData || []);
+        if (listingData.gaTrackingId) setGaTrackingId(listingData.gaTrackingId);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -79,6 +82,7 @@ export default function LandingPage() {
 
   return (
     <div dir="rtl" className="min-h-screen bg-stone-50 text-gray-900">
+      {gaTrackingId && <Analytics gaTrackingId={gaTrackingId} page="landing" />}
       {/* ──── Navigation ──── */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">

@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { t, type Locale, CURRENCIES } from "@/i18n/translations";
-import { CheckCircle, Copy, ExternalLink } from "lucide-react";
+import { CheckCircle, Copy, ExternalLink, Upload, X, Palette } from "lucide-react";
 
 export default function SettingsPage() {
   const { data: session, update } = useSession();
@@ -21,6 +21,9 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [userSlug, setUserSlug] = useState("");
+  const [logo, setLogo] = useState("");
+  const [brandColor, setBrandColor] = useState("#b45309");
+  const [maxImages, setMaxImages] = useState(10);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -34,6 +37,9 @@ export default function SettingsPage() {
         setDefaultFeeType(data.defaultFeeType || "");
         setDefaultFeeValue(data.defaultFeeValue?.toString() || "");
         setListInMarketplace(data.listInMarketplace || false);
+        setLogo(data.logo || "");
+        setBrandColor(data.brandColor || "#b45309");
+        setMaxImages(data.maxImages || 10);
       });
   }, []);
 
@@ -53,6 +59,8 @@ export default function SettingsPage() {
         listInMarketplace,
         defaultFeeType: defaultFeeType || null,
         defaultFeeValue: defaultFeeValue ? parseFloat(defaultFeeValue) : null,
+        logo,
+        brandColor,
       }),
     });
     const updated = await res.json();
@@ -189,6 +197,86 @@ export default function SettingsPage() {
                 {t(locale, "listInMarketplace")}
               </label>
               <p className="text-xs text-gray-500 mt-0.5">{t(locale, "listInMarketplaceHint")}</p>
+            </div>
+          </div>
+
+          {/* Branding Section */}
+          <div className="border-t pt-5">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">
+              {t(locale, "branding")}
+            </h3>
+
+            {/* Logo Upload */}
+            <div className="mb-4">
+              <label className="block text-xs text-gray-500 mb-1.5">
+                {t(locale, "logoUpload")}
+              </label>
+              <p className="text-xs text-gray-400 mb-2">{t(locale, "logoHint")}</p>
+              <div className="flex items-center gap-4">
+                {logo ? (
+                  <div className="relative">
+                    <img src={logo} alt="Logo" className="w-16 h-16 object-contain border border-gray-200 rounded-lg bg-white p-1" />
+                    <button
+                      type="button"
+                      onClick={() => setLogo("")}
+                      className="absolute -top-2 -end-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400">
+                    <Upload className="w-6 h-6" />
+                  </div>
+                )}
+                <label className="cursor-pointer px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                  {logo ? t(locale, "edit") : t(locale, "uploadImages")}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = () => setLogo(reader.result as string);
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Brand Color */}
+            <div className="mb-4">
+              <label className="block text-xs text-gray-500 mb-1.5">
+                {t(locale, "brandColor")}
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={brandColor}
+                  onChange={(e) => setBrandColor(e.target.value)}
+                  className="w-10 h-10 border border-gray-300 rounded-lg cursor-pointer p-0.5"
+                />
+                <input
+                  type="text"
+                  value={brandColor}
+                  onChange={(e) => setBrandColor(e.target.value)}
+                  className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  dir="ltr"
+                />
+                <div className="flex-1 h-10 rounded-lg" style={{ backgroundColor: brandColor }} />
+              </div>
+            </div>
+
+            {/* Max Images Info */}
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+              <p className="text-xs text-gray-500">
+                <Palette className="w-3.5 h-3.5 inline-block me-1" />
+                {t(locale, "maxImages")}: <span className="font-semibold text-gray-700">{maxImages}</span>
+                <span className="text-gray-400 ms-1">({t(locale, "maxImagesHint")})</span>
+              </p>
             </div>
           </div>
 

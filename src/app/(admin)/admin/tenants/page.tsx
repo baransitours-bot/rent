@@ -50,6 +50,7 @@ export default function TenantsPage() {
     name: "", email: "", phone: "", companyName: "", password: "",
     currency: "USD", locale: "ar",
     subscriptionStartDate: "", subscriptionExpiryDate: "",
+    maxImages: 10,
   });
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -94,6 +95,7 @@ export default function TenantsPage() {
       locale: tenant.locale,
       subscriptionStartDate: tenant.subscriptionStartDate ? new Date(tenant.subscriptionStartDate).toISOString().split("T")[0] : "",
       subscriptionExpiryDate: tenant.subscriptionExpiryDate ? new Date(tenant.subscriptionExpiryDate).toISOString().split("T")[0] : "",
+      maxImages: (tenant as any).maxImages || 10,
     });
     setShowEditModal(true);
   };
@@ -114,6 +116,7 @@ export default function TenantsPage() {
         locale: form.locale,
         subscriptionStartDate: form.subscriptionStartDate || null,
         subscriptionExpiryDate: form.subscriptionExpiryDate || null,
+        maxImages: form.maxImages,
       }),
     });
     setSaving(false);
@@ -168,7 +171,7 @@ export default function TenantsPage() {
         <h1 className="text-2xl font-bold text-gray-900">{t(locale, "tenantManagement")}</h1>
         <button
           onClick={() => {
-            setForm({ name: "", email: "", phone: "", companyName: "", password: "", currency: "USD", locale: "ar", subscriptionStartDate: new Date().toISOString().split("T")[0], subscriptionExpiryDate: "" });
+            setForm({ name: "", email: "", phone: "", companyName: "", password: "", currency: "USD", locale: "ar", subscriptionStartDate: new Date().toISOString().split("T")[0], subscriptionExpiryDate: "", maxImages: 10 });
             setShowCreateModal(true);
           }}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
@@ -431,6 +434,11 @@ export default function TenantsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "subscriptionExpiry")}</label>
                   <input type="date" value={form.subscriptionExpiryDate} onChange={(e) => setForm({ ...form, subscriptionExpiryDate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "maxImages")}</label>
+                <p className="text-xs text-gray-400 mb-1">{t(locale, "maxImagesHint")}</p>
+                <input type="number" min="1" max="50" value={form.maxImages} onChange={(e) => setForm({ ...form, maxImages: parseInt(e.target.value) || 10 })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="submit" disabled={saving} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 text-sm">{saving ? "..." : t(locale, "save")}</button>

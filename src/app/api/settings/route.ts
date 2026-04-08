@@ -27,6 +27,9 @@ export async function GET() {
       defaultFeeType: true,
       defaultFeeValue: true,
       listInMarketplace: true,
+      logo: true,
+      brandColor: true,
+      maxImages: true,
     },
   });
 
@@ -67,6 +70,8 @@ export async function PUT(request: NextRequest) {
   if (body.whatsapp !== undefined) data.whatsapp = body.whatsapp;
   if (body.companyName !== undefined) data.companyName = body.companyName;
   if (body.listInMarketplace !== undefined) data.listInMarketplace = body.listInMarketplace;
+  if (body.logo !== undefined) data.logo = body.logo;
+  if (body.brandColor !== undefined) data.brandColor = body.brandColor;
 
   // Auto-generate slug if name or companyName changed and user has no slug yet
   const currentUser = await prisma.user.findUnique({ where: { id: userId }, select: { slug: true, companyName: true, name: true } });
@@ -94,6 +99,9 @@ export async function PUT(request: NextRequest) {
       defaultFeeType: true,
       defaultFeeValue: true,
       listInMarketplace: true,
+      logo: true,
+      brandColor: true,
+      maxImages: true,
     },
   });
 

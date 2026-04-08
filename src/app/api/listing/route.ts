@@ -67,8 +67,13 @@ export async function GET(request: NextRequest) {
     orderBy: { city: "asc" },
   });
 
+  // Get system GA tracking ID
+  const gaSetting = await prisma.systemSettings.findUnique({ where: { key: "gaTrackingId" } });
+  const gaTrackingId = gaSetting?.value || "";
+
   return NextResponse.json({
     properties,
     cities: cities.map((c) => c.city),
+    gaTrackingId,
   });
 }
