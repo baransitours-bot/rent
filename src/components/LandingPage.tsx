@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Building2, MapPin, Search, ArrowLeft, Users, Home, Shield, Phone, ChevronLeft } from "lucide-react";
+import { Building2, MapPin, Search, ArrowLeft, Users, Home, Shield, Phone, ChevronLeft, LogIn } from "lucide-react";
 import Analytics from "@/components/Analytics";
 
 interface Property {
@@ -57,19 +57,19 @@ export default function LandingPage() {
 
       {/* ── Navigation ── */}
       <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-lg shadow-sm border-b border-zinc-100" : "bg-transparent"}`}>
-        <div className="max-w-6xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-5 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
             {brand.logo ? (
-              <img src={brand.logo} alt={brand.name} className="w-9 h-9 object-contain" />
+              <img src={brand.logo} alt={brand.name} className="w-8 h-8 sm:w-9 sm:h-9 object-contain shrink-0" />
             ) : (
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: c }}>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: c }}>
                 <Home className="w-4 h-4 text-white" />
               </div>
             )}
-            <span className={`text-[15px] font-bold transition-colors ${scrolled ? "text-zinc-900" : "text-white"}`}>{brand.name}</span>
+            <span className={`text-[14px] sm:text-[15px] font-bold transition-colors truncate ${scrolled ? "text-zinc-900" : "text-white"}`}>{brand.name}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <div className="hidden md:flex items-center gap-1">
               <button onClick={() => document.getElementById("properties")?.scrollIntoView({ behavior: "smooth" })}
                 className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${scrolled ? "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50" : "text-white/70 hover:text-white hover:bg-white/10"}`}>
@@ -84,8 +84,9 @@ export default function LandingPage() {
                 السوق
               </Link>
             </div>
-            <Link href="/login" className="px-4 py-2 text-white text-[13px] font-semibold rounded-xl hover:opacity-90 transition-all" style={{ backgroundColor: c }}>
-              تسجيل الدخول
+            <Link href="/login" className="px-3 sm:px-4 py-1.5 sm:py-2 text-white text-[12px] sm:text-[13px] font-semibold rounded-xl hover:opacity-90 transition-all whitespace-nowrap" style={{ backgroundColor: c }}>
+              <span className="hidden sm:inline">تسجيل الدخول</span>
+              <span className="sm:hidden"><LogIn className="w-3.5 h-3.5" /></span>
             </Link>
           </div>
         </div>
@@ -195,7 +196,7 @@ export default function LandingPage() {
                       {coverImg ? (
                         <img src={coverImg} alt={prop.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center"><Building2 className="w-12 h-12 text-zinc-200" /></div>
+                        <img src="/placeholder-property.svg" alt="" className="w-full h-full object-cover" />
                       )}
                       <span className="absolute top-3 start-3 px-2.5 py-1 text-[11px] font-semibold bg-white/95 backdrop-blur-sm text-zinc-700 rounded-lg">
                         {TYPE_LABELS[prop.type] || prop.type}

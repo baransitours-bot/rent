@@ -10,6 +10,10 @@
   border-color: #e5e7eb;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   background: #fafafa;
   color: #18181b;

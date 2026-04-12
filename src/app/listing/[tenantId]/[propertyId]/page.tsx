@@ -108,28 +108,54 @@ export default function PropertyDetailPage() {
   return (
     <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-[#fafafa]">
       {lightboxOpen && images.length > 0 && <Lightbox images={images} startIndex={activeImage} onClose={() => setLightboxOpen(false)} isRTL={isRTL} />}
+
+      {/* ── Inquiry Modal ── */}
+      {showInquiry && (
+        <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4" onClick={() => setShowInquiry(false)}>
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[16px] font-bold text-zinc-900">{txt[locale].sendInquiry}</h3>
+              <button onClick={() => setShowInquiry(false)} className="p-1.5 hover:bg-zinc-100 rounded-lg text-zinc-400"><X className="w-4 h-4" /></button>
+            </div>
+            <p className="text-[13px] text-zinc-400 mb-4 line-clamp-1">{property.title}</p>
+            <form onSubmit={handleInquirySubmit} className="space-y-2.5">
+              <input type="text" required placeholder={txt[locale].yourName} value={inquiryForm.senderName} onChange={(e) => setInquiryForm({ ...inquiryForm, senderName: e.target.value })} className={inputCls} />
+              <input type="text" placeholder={txt[locale].yourPhone} value={inquiryForm.senderPhone} onChange={(e) => setInquiryForm({ ...inquiryForm, senderPhone: e.target.value })} className={inputCls} dir="ltr" />
+              <textarea placeholder={txt[locale].yourMessage} value={inquiryForm.message} onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })} rows={3} className={`${inputCls} resize-none`} />
+              <div className="flex gap-2 pt-1">
+                <button type="submit" disabled={sendingInquiry} className="flex-1 px-4 py-2.5 text-white rounded-xl text-[13px] font-semibold hover:opacity-90 disabled:opacity-50 transition-colors" style={{ backgroundColor: bc }}>{sendingInquiry ? "..." : txt[locale].send}</button>
+                <button type="button" onClick={() => setShowInquiry(false)} className="px-4 py-2.5 border border-zinc-200 text-zinc-500 rounded-xl text-[13px] font-semibold hover:bg-zinc-50 transition-colors">{txt[locale].close}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <Analytics gaTrackingId={data.gaTrackingId} userId={user.id} propertyId={property.id} page="property" />
 
       {/* ── Header ── */}
       <header className="bg-white/95 backdrop-blur-lg border-b border-zinc-100 sticky top-0 z-30">
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Link href={`/listing/${user.slug || params.tenantId}`} className="p-2 hover:bg-zinc-100 rounded-xl text-zinc-500"><BackIcon className="w-4 h-4" /></Link>
-            <div className="flex items-center gap-2">
-              {user.logo ? <img src={user.logo} alt="" className="w-7 h-7 object-contain" /> : <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: bc }}><span className="text-[11px] font-bold text-white">{(user.companyName || user.name || "?").charAt(0)}</span></div>}
-              <span className="font-bold text-zinc-900 text-[13px]">{user.companyName || user.name}</span>
+        <div className="max-w-5xl mx-auto px-4 sm:px-5 h-14 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Link href={`/listing/${user.slug || params.tenantId}`} className="p-1.5 sm:p-2 hover:bg-zinc-100 rounded-xl text-zinc-500 shrink-0"><BackIcon className="w-4 h-4" /></Link>
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              {user.logo ? <img src={user.logo} alt="" className="w-7 h-7 object-contain shrink-0" /> : <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: bc }}><span className="text-[11px] font-bold text-white">{(user.companyName || user.name || "?").charAt(0)}</span></div>}
+              <span className="font-bold text-zinc-900 text-[12px] sm:text-[13px] truncate">{user.companyName || user.name}</span>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <button onClick={handleShare} className="p-2 hover:bg-zinc-100 rounded-xl text-zinc-400 relative">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            <button onClick={handleShare} className="p-1.5 sm:p-2 hover:bg-zinc-100 rounded-xl text-zinc-400 relative">
               <Share2 className="w-3.5 h-3.5" />
               {linkCopied && <span className="absolute -bottom-7 start-1/2 -translate-x-1/2 bg-zinc-800 text-white text-[10px] px-2 py-0.5 rounded-lg whitespace-nowrap z-10">{txt[locale].shareCopied}</span>}
             </button>
-            <button onClick={() => setLocale(locale === "ar" ? "en" : "ar")} className="text-[13px] text-zinc-400 hover:text-zinc-600 font-medium px-2 py-1">{txt[locale].switchLang}</button>
+            <button onClick={() => setLocale(locale === "ar" ? "en" : "ar")} className="text-[12px] sm:text-[13px] text-zinc-400 hover:text-zinc-600 font-medium px-1 sm:px-2 py-1">{txt[locale].switchLang}</button>
             {isLoggedIn ? (
-              <Link href="/dashboard" className="px-3 py-1.5 text-white text-[13px] font-semibold rounded-xl" style={{ backgroundColor: bc }}>{txt[locale].dashboard}</Link>
+              <Link href="/dashboard" className="px-2.5 sm:px-3 py-1.5 text-white text-[12px] sm:text-[13px] font-semibold rounded-xl whitespace-nowrap" style={{ backgroundColor: bc }}>
+                <span className="hidden sm:inline">{txt[locale].dashboard}</span>
+                <span className="sm:hidden">{locale === "ar" ? "التحكم" : "Dash"}</span>
+              </Link>
             ) : (
-              <Link href="/login" className="px-3 py-1.5 text-white text-[13px] font-semibold rounded-xl flex items-center gap-1.5" style={{ backgroundColor: bc }}><LogIn className="w-3 h-3" />{txt[locale].login}</Link>
+              <Link href="/login" className="px-2.5 sm:px-3 py-1.5 text-white text-[12px] sm:text-[13px] font-semibold rounded-xl flex items-center gap-1 sm:gap-1.5 whitespace-nowrap" style={{ backgroundColor: bc }}><LogIn className="w-3 h-3" /><span className="hidden sm:inline">{txt[locale].login}</span></Link>
             )}
           </div>
         </div>
@@ -137,6 +163,13 @@ export default function PropertyDetailPage() {
 
       <div className="max-w-5xl mx-auto px-5 py-6">
         {/* ── Image Carousel ── */}
+        {images.length === 0 && (
+          <div className="mb-6">
+            <div className="aspect-video rounded-2xl overflow-hidden bg-zinc-100">
+              <img src="/placeholder-property.svg" alt="" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        )}
         {images.length > 0 && (
           <div className="mb-6">
             <div className="aspect-video rounded-2xl overflow-hidden bg-zinc-100 relative cursor-pointer group" onClick={() => setLightboxOpen(true)}>
@@ -213,22 +246,10 @@ export default function PropertyDetailPage() {
                     <Phone className="w-4 h-4" /><span dir="ltr">{user.phone}</span>
                   </a>
                 )}
-                <button onClick={() => setShowInquiry(!showInquiry)} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-zinc-200 text-zinc-600 rounded-xl text-[13px] font-semibold hover:bg-zinc-50 transition-colors">
+                <button onClick={() => setShowInquiry(true)} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-zinc-200 text-zinc-600 rounded-xl text-[13px] font-semibold hover:bg-zinc-50 transition-colors">
                   <Send className="w-4 h-4" />{txt[locale].sendInquiry}
                 </button>
               </div>
-
-              {showInquiry && (
-                <form onSubmit={handleInquirySubmit} className="mt-4 border-t border-zinc-100 pt-4 space-y-2.5">
-                  <input type="text" required placeholder={txt[locale].yourName} value={inquiryForm.senderName} onChange={(e) => setInquiryForm({ ...inquiryForm, senderName: e.target.value })} className={inputCls} />
-                  <input type="text" placeholder={txt[locale].yourPhone} value={inquiryForm.senderPhone} onChange={(e) => setInquiryForm({ ...inquiryForm, senderPhone: e.target.value })} className={inputCls} dir="ltr" />
-                  <textarea placeholder={txt[locale].yourMessage} value={inquiryForm.message} onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })} rows={3} className={`${inputCls} resize-none`} />
-                  <div className="flex gap-2">
-                    <button type="submit" disabled={sendingInquiry} className="flex-1 px-4 py-2.5 text-white rounded-xl text-[13px] font-semibold hover:opacity-90 disabled:opacity-50 transition-colors" style={{ backgroundColor: bc }}>{sendingInquiry ? "..." : txt[locale].send}</button>
-                    <button type="button" onClick={() => setShowInquiry(false)} className="px-4 py-2.5 border border-zinc-200 text-zinc-500 rounded-xl text-[13px] font-semibold hover:bg-zinc-50 transition-colors">{txt[locale].close}</button>
-                  </div>
-                </form>
-              )}
             </div>
 
             {/* Agent card */}

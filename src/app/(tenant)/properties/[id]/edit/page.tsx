@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { t, type Locale } from "@/i18n/translations";
 import { ArrowRight, ArrowLeft, Upload, Check, Star } from "lucide-react";
@@ -34,6 +34,7 @@ export default function EditPropertyPage() {
   const [loading, setLoading] = useState(true);
   const [amenities, setAmenities] = useState<Array<{ id: string; nameAr: string; nameEn: string }>>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch(`/api/properties/${params.id}`)
@@ -146,11 +147,11 @@ export default function EditPropertyPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">{t(locale, "propertyImages")}</label>
-          <label className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 text-sm text-gray-500">
-            <Upload className="w-4 h-4" />
+          <input ref={fileInputRef} type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 active:bg-gray-100 text-sm text-gray-500 transition-colors">
+            <Upload className="w-5 h-5" />
             {uploading ? "..." : t(locale, "uploadImages")}
-            <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
-          </label>
+          </button>
           {images.length > 0 && (
             <div className="flex gap-2 mt-2 flex-wrap">
               {images.map((img, i) => (
